@@ -1,0 +1,28 @@
+package infrastructurea
+
+import (
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+)
+
+type SqlHandler struct {
+	Conn *gorm.DB
+}
+
+func NewSQLHandler() *SqlHandler {
+	DBMS := "mysql"
+	USER := "root"
+	PASS := "Mimaken@0930"
+	PROTOCOL := "tcp(localhost:3306)"
+	DBNAME := "shareit?parseTime=true"
+
+	CONNECT := USER + ":" + PASS + "@" + PROTOCOL + "/" + DBNAME
+	conn, err := gorm.Open(DBMS, CONNECT)
+	if err != nil {
+		panic(err.Error())
+	}
+	sqlHandler := new(SqlHandler)
+	sqlHandler.Conn = conn
+
+	return sqlHandler
+}
