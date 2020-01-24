@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/mimaken3/ShareIT/domain/model"
+import "github.com/mimaken3/ShareIT-api/domain/model"
 
 // UserRepository is interface for infrastructure
 type UserRepository interface {

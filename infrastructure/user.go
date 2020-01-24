@@ -2,8 +2,8 @@ package infrastructure
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/mimaken3/ShareIT/domain/model"
-	"github.com/mimaken3/ShareIT/domain/repository"
+	"github.com/mimaken3/ShareIT-api/domain/model"
+	"github.com/mimaken3/ShareIT-api/domain/repository"
 )
 
 type userInfraStruct struct {

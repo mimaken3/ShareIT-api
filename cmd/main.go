@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/labstack/echo"
-	"github.com/mimaken3/ShareIT/application/server"
+	"github.com/mimaken3/ShareIT-api/application/server"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/labstack/echo"
-	"github.com/mimaken3/ShareIT/application/server/handler"
+	"github.com/mimaken3/ShareIT-api/application/server/handler"
 )
 
 func InitRouting(e *echo.Echo) {

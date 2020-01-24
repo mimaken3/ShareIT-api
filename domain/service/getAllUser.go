@@ -3,7 +3,7 @@ package service
 import (
 	"log"
 
-	"github.com/mimaken3/ShareIT/domain/model"
+	"github.com/mimaken3/ShareIT-api/domain/model"
 )
 
 // 全ユーザを取得
