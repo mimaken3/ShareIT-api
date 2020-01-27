@@ -20,6 +20,9 @@ func InitRouting(e *echo.Echo) {
 	// 最後のユーザIDを取得
 	e.GET("/user/lastUserId", handler.FindLastUserId())
 
+	// 全記事を取得
+	e.GET("/articles", handler.FindAllArticles())
+
 	handler.DI()
 	log.Println("Server running...")
 }

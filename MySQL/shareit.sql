@@ -27,13 +27,13 @@ deleted_date DATETIME
 -- 記事
 DROP TABLE IF EXISTS articles;
 
-CREATE TABLE articles(
-article_id INT UNSIGNED NOT NULL PRIMARY KEY,
-article_title VARCHAR(255) NOT NULL,
-created_user_id INT UNSIGNED NOT NULL,
-article_content VARCHAR(1000) NOT NULL,
-article_topics VARCHAR(255) NOT NULL,
-created_date DATETIME NOT NULL,
-updated_date DATETIME NOT NULL,
-deleted_date DATETIME 
+create table articles(
+article_id int unsigned not null primary key,
+article_title varchar(255) not null,
+created_user_id int unsigned not null,
+article_content varchar(1000) not null,
+article_topics varchar(255) not null,
+created_date datetime not null,
+updated_date datetime not null,
+deleted_date datetime 
 );
