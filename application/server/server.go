@@ -14,6 +14,12 @@ func InitRouting(e *echo.Echo) {
 	// ユーザを取得
 	e.GET("/user/:user_id", handler.FindUserByUserId())
 
+	// ユーザを登録
+	e.POST("/user/signUp", handler.SignUpUser())
+
+	// 最後のユーザIDを取得
+	e.GET("/user/lastUserId", handler.FindLastUserId())
+
 	handler.DI()
 	log.Println("Server running...")
 }

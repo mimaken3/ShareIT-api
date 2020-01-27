@@ -1,6 +1,8 @@
 package infrastructure
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 	"github.com/mimaken3/ShareIT-api/domain/model"
 	"github.com/mimaken3/ShareIT-api/domain/repository"
@@ -24,5 +26,40 @@ func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) 
 // ユーザを取得
 func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, err error) {
 	userRepo.db.Find(&user, "user_id=?", userId)
+	return
+}
+
+// ユーザを登録
+func (userRepo *userInfraStruct) SignUpUser(user model.User) (model.User, error) {
+	// TODO: パスワードハッシュ化、もしくはDB通信エラーで使用予定
+	var err error
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	nowTime := time.Now().Format(dateFormat)
+	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
+
+	const defaultDeletedDateStr = "9999-12-31 23:59:59"
+	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
+
+	user.UserID = 9999
+	user.CreatedDate = customisedNowTime
+	user.UpdatedDate = customisedNowTime
+	user.DeletedDate = defaultDeletedDate
+
+	userRepo.db.Create(&user)
+
+	// セキュリティのためパスワードを返さない
+	user.Password = ""
+
+	return user, err
+}
+
+// 最後のユーザIDを取得
+func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
+	user := model.User{}
+	// SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1;
+	userRepo.db.Select("user_id").Last(&user)
+	lastUserId = user.UserID
 	return
 }
