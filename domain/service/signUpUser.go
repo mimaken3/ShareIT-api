@@ -8,7 +8,11 @@ import (
 
 // ユーザを登録
 func (u *userServiceStruct) SignUpUser(user model.User) (signUpedUser model.User, err error) {
-	signUpedUser, err = u.userRepo.SignUpUser(user)
+	// 最後のユーザIDを取得
+	lastUserId, err := u.userRepo.FindLastUserId()
+
+	signUpedUser, err = u.userRepo.SignUpUser(user, lastUserId)
+
 	if err != nil {
 		log.Println(err)
 	}

@@ -11,7 +11,7 @@ type UserRepository interface {
 	FindUserByUserId(userId int) (user model.User, err error)
 
 	// ユーザを登録
-	SignUpUser(user model.User) (signedUpUser model.User, err error)
+	SignUpUser(user model.User, lastUserId uint) (signedUpUser model.User, err error)
 
 	// 最後のユーザIDを取得
 	FindLastUserId() (lastUserId uint, err error)
