@@ -37,3 +37,11 @@ created_date datetime not null,
 updated_date datetime not null,
 deleted_date datetime 
 );
+
+-- 記事とトピックと紐付けるテーブル
+DROP TABLE IF EXISTS article_topics;
+CREATE TABLE article_topics(
+article_topic_id INT UNSIGNED NOT NULL PRIMARY KEY,
+article_id INT UNSIGNED NOT NULL,
+topic_id INT UNSIGNED NOT NULL
+);
