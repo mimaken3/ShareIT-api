@@ -21,6 +21,12 @@ func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Artic
 	return
 }
 
+// 特定のユーザの全記事を取得
+func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint) (articles []model.Article, err error) {
+	articleRepo.db.Where("created_user_id = ?", userID).Find(&articles)
+	return
+}
+
 // 特定のトピックを含む記事を取得
 func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.ArticleTopic) (articles []model.Article, err error) {
 	for i := 0; i < len(articleIds); i++ {

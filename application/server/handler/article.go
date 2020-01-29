@@ -16,6 +16,18 @@ func FindAllArticles() echo.HandlerFunc {
 	}
 }
 
+// 特定のユーザの全記事を取得
+func FindArticlesByUserId() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID, _ := strconv.Atoi(c.Param("user_id"))
+		// intをuintに変換
+		var uintUserID uint = uint(userID)
+
+		articles, _ := articleService.FindArticlesByUserIdService(uintUserID)
+		return c.JSON(http.StatusOK, articles)
+	}
+}
+
 // 特定のトピックを含む記事を取得
 func FindArticlesByTopicId() echo.HandlerFunc {
 	return func(c echo.Context) error {

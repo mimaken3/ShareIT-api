@@ -7,6 +7,9 @@ type ArticleRepository interface {
 	// 記事を全取得
 	FindAllArticles() (articles []model.Article, err error)
 
+	// 特定のユーザの全記事を取得
+	FindArticlesByUserId(userID uint) (articles []model.Article, err error)
+
 	// 特定のトピックを含む記事を取得
 	FindArticlesByTopicId(articleIds []model.ArticleTopic) (articles []model.Article, err error)
 

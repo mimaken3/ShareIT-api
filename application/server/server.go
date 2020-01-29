@@ -23,6 +23,9 @@ func InitRouting(e *echo.Echo) {
 	// 全記事を取得
 	e.GET("/articles", handler.FindAllArticles())
 
+	// 特定のユーザの前記事を取得
+	e.GET("/user/:user_id/articles", handler.FindArticlesByUserId())
+
 	// 特定のトピックを含む記事を取得
 	e.GET("/articles/:topic_id", handler.FindArticlesByTopicId())
 
