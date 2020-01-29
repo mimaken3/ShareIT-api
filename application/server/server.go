@@ -8,6 +8,9 @@ import (
 )
 
 func InitRouting(e *echo.Echo) {
+	// テストレスポンスを返す
+	e.GET("/test", handler.TestResponse())
+
 	// 全ユーザを取得
 	e.GET("/users", handler.FindAllUsers())
 

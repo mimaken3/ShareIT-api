@@ -10,5 +10,5 @@ func main() {
 
 	server.InitRouting(e)
 
-	e.Logger.Fatal(e.Start(":1460"))
+	e.Logger.Fatal(e.Start(":1462"))
 }

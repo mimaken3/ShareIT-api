@@ -8,6 +8,13 @@ import (
 	"github.com/mimaken3/ShareIT-api/domain/model"
 )
 
+// テストレスポンスを返す
+func TestResponse() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello World!")
+	}
+}
+
 // 全記事を取得
 func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
