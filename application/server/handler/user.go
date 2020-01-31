@@ -16,6 +16,20 @@ func FindAllUsers() echo.HandlerFunc {
 	}
 }
 
+// ユーザ登録のチェック
+func CheckUserInfo() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		checkUser := model.User{}
+		resultUserInfo := model.CheckUserInfo{}
+		if err := c.Bind(&checkUser); err != nil {
+			return err
+		}
+		resultUserInfo, _ = userService.CheckUserInfoService(checkUser)
+
+		return c.JSON(http.StatusOK, resultUserInfo)
+	}
+}
+
 // ユーザを取得
 func FindUserByUserId() echo.HandlerFunc {
 	return func(c echo.Context) error {

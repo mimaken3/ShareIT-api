@@ -23,6 +23,33 @@ func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) 
 	return
 }
 
+// ユーザ登録のチェック
+func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error) {
+
+	// ユーザ名の重複チェック
+	if userRepo.db.Where("user_name = ?", checkUser.UserName).First(&model.User{}).RecordNotFound() {
+		resultUserInfo.ResultUserNameNum = 0
+		resultUserInfo.ResultUserNameText = "このユーザ名は登録出来ます！"
+	} else {
+		resultUserInfo.ResultUserNameNum = 1
+		resultUserInfo.ResultUserNameText = "このユーザ名は既に使われています..."
+	}
+
+	// メアドの重複チェック
+	if userRepo.db.Where("email = ?", checkUser.Email).First(&model.User{}).RecordNotFound() {
+		resultUserInfo.ResultEmailNum = 0
+		resultUserInfo.ResultEmailText = "このメールアドレスは登録出来ます！"
+	} else {
+		resultUserInfo.ResultEmailNum = 1
+		resultUserInfo.ResultEmailText = "このメールアドレスは既に使われています..."
+	}
+
+	resultUserInfo.UserName = checkUser.UserName
+	resultUserInfo.Email = checkUser.Email
+
+	return
+}
+
 // ユーザを取得
 func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, err error) {
 	userRepo.db.Find(&user, "user_id=?", userId)

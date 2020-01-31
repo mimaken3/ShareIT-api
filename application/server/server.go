@@ -11,6 +11,9 @@ func InitRouting(e *echo.Echo) {
 	// テストレスポンスを返す
 	e.GET("/test", handler.TestResponse())
 
+	// ユーザ登録のチェック
+	e.POST("/signUp/check", handler.CheckUserInfo())
+
 	// 全ユーザを取得
 	e.GET("/users", handler.FindAllUsers())
 

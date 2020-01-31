@@ -14,6 +14,9 @@ type UserServiceInterface interface {
 	// 全ユーザを取得
 	FindAllUsersService() (users []model.User, err error)
 
+	// ユーザ登録のチェック
+	CheckUserInfoService(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error)
+
 	// ユーザを取得
 	FindUserByUserIdService(userId int) (user model.User, err error)
 

@@ -21,6 +21,5 @@ func main() {
 	}
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
-	// e.Logger.Fatal(e.Start(":8080"))
 	appengine.Main()
 }
