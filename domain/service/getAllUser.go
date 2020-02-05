@@ -12,5 +12,10 @@ func (u *userServiceStruct) FindAllUsersService() ([]model.User, error) {
 	if err != nil {
 		log.Println(err)
 	}
+	// セキュリティのためパスワードを返さない
+	for i := 0; i < len(users); i++ {
+		users[i].Password = ""
+	}
+
 	return users, err
 }

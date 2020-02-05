@@ -12,5 +12,8 @@ func (u *userServiceStruct) FindUserByUserIdService(userId int) (model.User, err
 	if err != nil {
 		log.Println(err)
 	}
+	// セキュリティのためパスワードを返さない
+	user.Password = ""
+
 	return user, err
 }
