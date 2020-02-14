@@ -11,7 +11,7 @@ import (
 // テストレスポンスを返す
 func TestResponse() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello World!")
+		return c.String(http.StatusOK, "CORSやってます！!!!")
 	}
 }
 
