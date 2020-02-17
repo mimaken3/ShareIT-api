@@ -7,6 +7,9 @@ type ArticleRepository interface {
 	// 記事を全取得
 	FindAllArticles() (articles []model.Article, err error)
 
+	// 記事を投稿
+	CreateArticle(createArticle model.Article, lastArticleId uint) (createdArticle model.Article, err error)
+
 	// 特定のユーザの全記事を取得
 	FindArticlesByUserId(userID uint) (articles []model.Article, err error)
 
@@ -15,4 +18,7 @@ type ArticleRepository interface {
 
 	// 指定したトピックを含む記事のIDを取得
 	FindArticleIdsByTopicId(topicID uint) (articleIds []model.ArticleTopic, err error)
+
+	// 最後の記事IDを取得
+	FindLastArticleId() (lastArticleId uint, err error)
 }

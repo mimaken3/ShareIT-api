@@ -11,7 +11,7 @@ import (
 // テストレスポンスを返す
 func TestResponse() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		return c.String(http.StatusOK, "CORSやってます！!!!")
+		return c.String(http.StatusOK, "成功！！")
 	}
 }
 
@@ -20,6 +20,23 @@ func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		articles, _ := articleService.FindAllArticlesService()
 		return c.JSON(http.StatusOK, articles)
+	}
+}
+
+// 記事を投稿
+func CreateArticle() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		createArticle := model.Article{}
+		if err := c.Bind(&createArticle); err != nil {
+			return err
+		}
+		// 記事を追加
+		createdArticle, _ := articleService.CreateArticle(createArticle)
+
+		// 記事トピックを追加
+		articleTopicService.CreateArticleTopic(createdArticle)
+
+		return c.JSON(http.StatusOK, createdArticle)
 	}
 }
 
@@ -60,5 +77,16 @@ func FindArticleIdsByTopicId() echo.HandlerFunc {
 		var articleIds []model.ArticleTopic
 		articleIds, _ = articleService.FindArticleIdsByTopicIdService(uintTopicID)
 		return c.JSON(http.StatusOK, articleIds)
+	}
+}
+
+// 最後の記事IDを取得
+func FindLastArticleId() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		lastArticleId, err := articleService.FindLastArticleId()
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, lastArticleId)
+		}
+		return c.JSON(http.StatusOK, lastArticleId)
 	}
 }

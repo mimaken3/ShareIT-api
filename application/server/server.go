@@ -29,6 +29,9 @@ func InitRouting(e *echo.Echo) {
 	// 全記事を取得
 	e.GET("/articles", handler.FindAllArticles())
 
+	// 記事を投稿
+	e.POST("/user/:user_id/createArticle", handler.CreateArticle())
+
 	// 特定のユーザの前記事を取得
 	e.GET("/user/:user_id/articles", handler.FindArticlesByUserId())
 
@@ -37,6 +40,9 @@ func InitRouting(e *echo.Echo) {
 
 	// 指定したトピックを含む記事のIDを取得
 	e.GET("/articleIds/:topic_id", handler.FindArticleIdsByTopicId())
+
+	// 最後の記事IDを取得
+	e.GET("/article/lastArticleId", handler.FindLastArticleId())
 
 	handler.DI()
 	log.Println("Server running...")
