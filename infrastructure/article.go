@@ -134,3 +134,10 @@ func (articleRepo *articleInfraStruct) CheckUpdateArticleTopic(willBeUpdatedArti
 	// 記事トピックが更新されていた場合
 	return true
 }
+
+// 記事を削除
+func (articleRepo *articleInfraStruct) DeleteArticleByArticleId(articleId uint) (err error) {
+	articleRepo.db.Where("article_id = ?", articleId).Delete(&model.Article{})
+	return nil
+	//TODO: 削除に失敗した場合
+}

@@ -64,6 +64,31 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 	}
 }
 
+// 記事を削除
+func DeleteArticleByArticleId() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		articleId, _ := strconv.Atoi(c.Param("article_id"))
+
+		// intをuintに変換
+		var uintArticleId uint = uint(articleId)
+
+		err := articleService.DeleteArticleByArticleId(uintArticleId)
+
+		if err == nil {
+			// 記事トピックを削除
+			willBeDeletedArticle := model.Article{ArticleID: uintArticleId}
+			articleTopicService.DeleteArticleTopic(willBeDeletedArticle)
+			// TODO: 記事トピック削除が失敗したらエラーを返す
+
+			// 削除に成功したら
+			return c.String(http.StatusOK, "Successfully deleted article")
+		} else {
+			// 削除に失敗したら
+			return c.String(http.StatusBadRequest, "Faild to delete article")
+		}
+	}
+}
+
 // 記事を投稿
 func CreateArticle() echo.HandlerFunc {
 	return func(c echo.Context) error {

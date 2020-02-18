@@ -37,6 +37,9 @@ type ArticleServiceInterface interface {
 
 	// 記事のトピックが更新されているか確認
 	CheckUpdateArticleTopic(willBeUpdatedArticle model.Article) bool
+
+	// 記事を削除
+	DeleteArticleByArticleId(articleId uint) (err error)
 }
 
 // DIのための関数

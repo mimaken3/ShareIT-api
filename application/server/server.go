@@ -38,6 +38,9 @@ func InitRouting(e *echo.Echo) {
 	// 記事を更新
 	e.PUT("/article/:article_id", handler.UpdateArticleByArticleId())
 
+	// 記事を削除
+	e.DELETE("/article/:article_id", handler.DeleteArticleByArticleId())
+
 	// 特定のユーザの前記事を取得
 	e.GET("/user/:user_id/articles", handler.FindArticlesByUserId())
 

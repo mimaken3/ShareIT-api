@@ -16,6 +16,9 @@ type ArticleTopicServiceInterface interface {
 
 	// 記事に紐づくトピックを更新
 	UpdateArticleTopic(willBeUpdatedArticle model.Article)
+
+	// 記事に紐づくトピックを削除
+	DeleteArticleTopic(willBeDeletedArticle model.Article)
 }
 
 // DIのための関数

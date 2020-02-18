@@ -11,5 +11,5 @@ type ArticleTopicRepository interface {
 	FindLastArticleTopicId() (lastArticleTopicId uint, err error)
 
 	// 記事に紐づくトピックを削除
-	DeleteArticleTopic(willBeUpdatedArticle model.Article)
+	DeleteArticleTopic(willBeDeletedArticle model.Article)
 }
