@@ -13,6 +13,9 @@ type articleTopicServiceStruct struct {
 type ArticleTopicServiceInterface interface {
 	// 記事に紐づくトピックを追加
 	CreateArticleTopic(article model.Article)
+
+	// 記事に紐づくトピックを更新
+	UpdateArticleTopic(willBeUpdatedArticle model.Article)
 }
 
 // DIのための関数

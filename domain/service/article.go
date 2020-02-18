@@ -11,14 +11,17 @@ type articleServiceStruct struct {
 
 // Application層はこのInterfaceに依存
 type ArticleServiceInterface interface {
-	// 全記事を取得
-	FindAllArticlesService() (articles []model.Article, err error)
+	// 記事を投稿
+	CreateArticle(createArticle model.Article) (createdArticle model.Article, err error)
 
 	// 記事を取得
 	FindArticleByArticleId(articleId uint) (article model.Article, err error)
 
-	// 記事を投稿
-	CreateArticle(createArticle model.Article) (createdArticle model.Article, err error)
+	// 全記事を取得
+	FindAllArticlesService() (articles []model.Article, err error)
+
+	// 記事を更新
+	UpdateArticleByArticleId(willBeUpdatedArticle model.Article) (updatedArticle model.Article, err error)
 
 	// 特定のユーザの全記事を取得
 	FindArticlesByUserIdService(userID uint) (articles []model.Article, err error)
@@ -31,6 +34,9 @@ type ArticleServiceInterface interface {
 
 	// 最後の記事IDを取得
 	FindLastArticleId() (lastArticleId uint, err error)
+
+	// 記事のトピックが更新されているか確認
+	CheckUpdateArticleTopic(willBeUpdatedArticle model.Article) bool
 }
 
 // DIのための関数

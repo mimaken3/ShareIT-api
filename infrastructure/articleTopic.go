@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"log"
 	"strconv"
 	"strings"
 
@@ -48,4 +49,13 @@ func (articleTopicRepo *articleTopicInfraStruct) FindLastArticleTopicId() (lastA
 	articleTopicRepo.db.Select("article_topic_id").Last(&articleTopic)
 	lastArticleTopicId = articleTopic.ArticleTopicID
 	return
+}
+
+// 記事に紐づくトピックを削除
+func (articleTopicRepo *articleTopicInfraStruct) DeleteArticleTopic(willBeUpdatedArticle model.Article) {
+	articleId := willBeUpdatedArticle.ArticleID
+	articleTopic := model.ArticleTopic{}
+
+	articleTopicRepo.db.Where("article_id = ?", articleId).Delete(&articleTopic)
+	log.Println("delete")
 }

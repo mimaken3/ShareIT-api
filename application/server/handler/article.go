@@ -33,6 +33,37 @@ func FindArticleByArticleId() echo.HandlerFunc {
 	}
 }
 
+// 記事を更新
+func UpdateArticleByArticleId() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		willBeUpdatedArticle := model.Article{}
+
+		if err := c.Bind(&willBeUpdatedArticle); err != nil {
+			return err
+		}
+
+		// 記事トピックが更新されているか確認
+		isUpdatedArticleTopic := articleService.CheckUpdateArticleTopic(willBeUpdatedArticle)
+
+		// 記事を更新
+		updatedArticle, err := articleService.UpdateArticleByArticleId(willBeUpdatedArticle)
+
+		if err == nil {
+			if isUpdatedArticleTopic {
+				// 記事トピックを更新
+				articleTopicService.UpdateArticleTopic(willBeUpdatedArticle)
+			}
+		}
+
+		if err != nil {
+			//TODO: Badステータスを返す
+			return err
+		}
+
+		return c.JSON(http.StatusOK, updatedArticle)
+	}
+}
+
 // 記事を投稿
 func CreateArticle() echo.HandlerFunc {
 	return func(c echo.Context) error {

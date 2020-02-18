@@ -26,14 +26,17 @@ func InitRouting(e *echo.Echo) {
 	// 最後のユーザIDを取得
 	e.GET("/user/lastUserId", handler.FindLastUserId())
 
+	// 記事を投稿
+	e.POST("/user/:user_id/createArticle", handler.CreateArticle())
+
 	// 全記事を取得
 	e.GET("/articles", handler.FindAllArticles())
 
 	// 記事を取得
 	e.GET("/article/:article_id", handler.FindArticleByArticleId())
 
-	// 記事を投稿
-	e.POST("/user/:user_id/createArticle", handler.CreateArticle())
+	// 記事を更新
+	e.PUT("/article/:article_id", handler.UpdateArticleByArticleId())
 
 	// 特定のユーザの前記事を取得
 	e.GET("/user/:user_id/articles", handler.FindArticlesByUserId())

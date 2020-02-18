@@ -55,6 +55,38 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	return
 }
 
+// 記事を更新
+func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArticle model.Article) (updatedArticle model.Article, err error) {
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	updateTime := time.Now().Format(dateFormat)
+	customisedUpdateTime, _ := time.Parse(dateFormat, updateTime)
+
+	// 更新するフィールドを設定
+	updateId := willBeUpdatedArticle.ArticleID
+	updateTitle := willBeUpdatedArticle.ArticleTitle
+	updateContent := willBeUpdatedArticle.ArticleContent
+	updateTopics := willBeUpdatedArticle.ArticleTopics
+
+	// 更新
+	articleRepo.db.Model(&updatedArticle).
+		Where("article_id = ?", updateId).
+		Updates(map[string]interface{}{
+			"article_title":   updateTitle,
+			"article_content": updateContent,
+			"article_topics":  updateTopics,
+			"updated_date":    customisedUpdateTime,
+		})
+
+	// updateで値の入ってないフィールドに値を格納
+	updatedArticle.ArticleID = willBeUpdatedArticle.ArticleID
+	updatedArticle.CreatedUserID = willBeUpdatedArticle.CreatedUserID
+	updatedArticle.CreatedDate = willBeUpdatedArticle.CreatedDate
+	updatedArticle.DeletedDate = willBeUpdatedArticle.DeletedDate
+
+	return
+}
+
 // 特定のユーザの全記事を取得
 func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint) (articles []model.Article, err error) {
 	articleRepo.db.Where("created_user_id = ?", userID).Find(&articles)
@@ -86,4 +118,19 @@ func (articleRepo *articleInfraStruct) FindLastArticleId() (lastArticleId uint, 
 	articleRepo.db.Select("article_id").Last(&article)
 	lastArticleId = article.ArticleID
 	return
+}
+
+// 記事のトピックが更新されているか確認
+func (articleRepo *articleInfraStruct) CheckUpdateArticleTopic(willBeUpdatedArticle model.Article) bool {
+	article := model.Article{}
+	updateArticleId := willBeUpdatedArticle.ArticleID
+	topicsStr := willBeUpdatedArticle.ArticleTopics
+	articleRepo.db.Where("article_id = ?", updateArticleId).Find(&article)
+
+	if article.ArticleTopics == topicsStr {
+		// 記事トピックが更新されていない場合
+		return false
+	}
+	// 記事トピックが更新されていた場合
+	return true
 }
