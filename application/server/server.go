@@ -29,6 +29,9 @@ func InitRouting(e *echo.Echo) {
 	// 全記事を取得
 	e.GET("/articles", handler.FindAllArticles())
 
+	// 記事を取得
+	e.GET("/article/:article_id", handler.FindArticleByArticleId())
+
 	// 記事を投稿
 	e.POST("/user/:user_id/createArticle", handler.CreateArticle())
 

@@ -23,6 +23,16 @@ func FindAllArticles() echo.HandlerFunc {
 	}
 }
 
+// 記事を取得
+func FindArticleByArticleId() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// 記事IDを取得
+		articleId, _ := strconv.Atoi(c.Param("article_id"))
+		article, _ := articleService.FindArticleByArticleId(uint(articleId))
+		return c.JSON(http.StatusOK, article)
+	}
+}
+
 // 記事を投稿
 func CreateArticle() echo.HandlerFunc {
 	return func(c echo.Context) error {

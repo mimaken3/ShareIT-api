@@ -7,6 +7,9 @@ type ArticleRepository interface {
 	// 記事を全取得
 	FindAllArticles() (articles []model.Article, err error)
 
+	// 記事を取得
+	FindArticleByArticleId(articleId uint) (article model.Article, err error)
+
 	// 記事を投稿
 	CreateArticle(createArticle model.Article, lastArticleId uint) (createdArticle model.Article, err error)
 

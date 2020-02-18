@@ -23,6 +23,13 @@ func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Artic
 	return
 }
 
+// 記事を取得
+func (articleRepo *articleInfraStruct) FindArticleByArticleId(articleId uint) (article model.Article, err error) {
+	// SELECT * FROM article WHERE article_id = :articleId;
+	articleRepo.db.Find(&article, "article_id = ?", articleId)
+	return
+}
+
 // 記事を投稿
 func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article, lastArticleId uint) (createdArticle model.Article, err error) {
 	// 現在の日付を取得

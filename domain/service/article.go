@@ -14,6 +14,9 @@ type ArticleServiceInterface interface {
 	// 全記事を取得
 	FindAllArticlesService() (articles []model.Article, err error)
 
+	// 記事を取得
+	FindArticleByArticleId(articleId uint) (article model.Article, err error)
+
 	// 記事を投稿
 	CreateArticle(createArticle model.Article) (createdArticle model.Article, err error)
 

@@ -9,5 +9,6 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.0 // indirect
+	github.com/valyala/fasttemplate v1.1.0 // indirect
 	google.golang.org/appengine v1.6.5
 )
