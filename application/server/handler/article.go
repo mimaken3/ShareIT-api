@@ -18,7 +18,10 @@ func TestResponse() echo.HandlerFunc {
 // 全記事を取得
 func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		articles, _ := articleService.FindAllArticlesService()
+		articles, err := articleService.FindAllArticlesService()
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
 		return c.JSON(http.StatusOK, articles)
 	}
 }
@@ -28,7 +31,11 @@ func FindArticleByArticleId() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// 記事IDを取得
 		articleId, _ := strconv.Atoi(c.Param("article_id"))
-		article, _ := articleService.FindArticleByArticleId(uint(articleId))
+		article, err := articleService.FindArticleByArticleId(uint(articleId))
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+
 		return c.JSON(http.StatusOK, article)
 	}
 }
@@ -84,7 +91,7 @@ func DeleteArticleByArticleId() echo.HandlerFunc {
 			return c.String(http.StatusOK, "Successfully deleted article")
 		} else {
 			// 削除に失敗したら
-			return c.String(http.StatusBadRequest, "Faild to delete article")
+			return c.String(http.StatusBadRequest, err.Error())
 		}
 	}
 }
@@ -113,7 +120,13 @@ func FindArticlesByUserId() echo.HandlerFunc {
 		// intをuintに変換
 		var uintUserID uint = uint(userID)
 
-		articles, _ := articleService.FindArticlesByUserIdService(uintUserID)
+		articles, err := articleService.FindArticlesByUserIdService(uintUserID)
+
+		if err != nil {
+			// ない場合
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
 		return c.JSON(http.StatusOK, articles)
 	}
 }
@@ -128,7 +141,12 @@ func FindArticlesByTopicId() echo.HandlerFunc {
 		var articleIds []model.ArticleTopic
 		articleIds, _ = articleService.FindArticleIdsByTopicIdService(uintTopicID)
 
-		articles, _ := articleService.FindArticlesByTopicIdService(articleIds)
+		articles, err := articleService.FindArticlesByTopicIdService(articleIds)
+		if err != nil {
+			// ない場合
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
 		return c.JSON(http.StatusOK, articles)
 	}
 }
@@ -141,7 +159,12 @@ func FindArticleIdsByTopicId() echo.HandlerFunc {
 		var uintTopicID uint = uint(topicID)
 
 		var articleIds []model.ArticleTopic
-		articleIds, _ = articleService.FindArticleIdsByTopicIdService(uintTopicID)
+		articleIds, err := articleService.FindArticleIdsByTopicIdService(uintTopicID)
+		if err != nil {
+			// ない場合
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
 		return c.JSON(http.StatusOK, articleIds)
 	}
 }
@@ -151,7 +174,8 @@ func FindLastArticleId() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		lastArticleId, err := articleService.FindLastArticleId()
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, lastArticleId)
+			// ない場合
+			return c.JSON(http.StatusBadRequest, err.Error())
 		}
 		return c.JSON(http.StatusOK, lastArticleId)
 	}

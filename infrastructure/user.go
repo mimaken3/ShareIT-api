@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -19,7 +20,13 @@ func NewUserDB(db *gorm.DB) repository.UserRepository {
 
 // 全ユーザを取得
 func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) {
-	userRepo.db.Find(&users)
+	userRepo.db.Find(&users, "is_deleted = ?", 0)
+
+	// レコードがない場合
+	if len(users) == 0 {
+		return nil, errors.New("record not found")
+	}
+
 	return
 }
 
@@ -27,7 +34,7 @@ func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) 
 func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error) {
 
 	// ユーザ名の重複チェック
-	if userRepo.db.Where("user_name = ?", checkUser.UserName).First(&model.User{}).RecordNotFound() {
+	if userRepo.db.Where("user_name = ? AND is_deleted = ?", checkUser.UserName, 0).First(&model.User{}).RecordNotFound() {
 		resultUserInfo.ResultUserNameNum = 0
 		resultUserInfo.ResultUserNameText = "このユーザ名は登録出来ます！"
 	} else {
@@ -36,7 +43,7 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 	}
 
 	// メアドの重複チェック
-	if userRepo.db.Where("email = ?", checkUser.Email).First(&model.User{}).RecordNotFound() {
+	if userRepo.db.Where("email = ? AND is_deleted = ?", checkUser.Email, 0).First(&model.User{}).RecordNotFound() {
 		resultUserInfo.ResultEmailNum = 0
 		resultUserInfo.ResultEmailText = "このメールアドレスは登録出来ます！"
 	} else {
@@ -52,7 +59,10 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 
 // ユーザを取得
 func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, err error) {
-	userRepo.db.Find(&user, "user_id=?", userId)
+	if result := userRepo.db.Find(&user, "user_id = ? AND is_deleted = ?", userId, 0); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+	}
 	return
 }
 
@@ -86,7 +96,11 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 	user := model.User{}
 	// SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1; と同義
-	userRepo.db.Select("user_id").Last(&user)
+	if result := userRepo.db.Select("user_id").Where("is_deleted = ?", 0).Last(&user); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+	}
 	lastUserId = user.UserID
+
 	return
 }

@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -19,14 +20,23 @@ func NewArticleDB(db *gorm.DB) repository.ArticleRepository {
 
 // 全記事を取得
 func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Article, err error) {
-	articleRepo.db.Find(&articles)
+	articleRepo.db.Find(&articles, "is_deleted = ?", 0)
+
+	// レコードがない場合
+	if len(articles) == 0 {
+		return nil, errors.New("record not found")
+	}
+
 	return
 }
 
 // 記事を取得
 func (articleRepo *articleInfraStruct) FindArticleByArticleId(articleId uint) (article model.Article, err error) {
-	// SELECT * FROM article WHERE article_id = :articleId;
-	articleRepo.db.Find(&article, "article_id = ?", articleId)
+	// SELECT * FROM article WHERE article_id = :articleId AND is_deleted = 0;
+	if result := articleRepo.db.Find(&article, "article_id = ? AND is_deleted = ?", articleId, 0); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+	}
 	return
 }
 
@@ -62,8 +72,9 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 	updateTime := time.Now().Format(dateFormat)
 	customisedUpdateTime, _ := time.Parse(dateFormat, updateTime)
 
-	// 更新するフィールドを設定
 	updateId := willBeUpdatedArticle.ArticleID
+
+	// 更新するフィールドを設定
 	updateTitle := willBeUpdatedArticle.ArticleTitle
 	updateContent := willBeUpdatedArticle.ArticleContent
 	updateTopics := willBeUpdatedArticle.ArticleTopics
@@ -89,7 +100,13 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 
 // 特定のユーザの全記事を取得
 func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint) (articles []model.Article, err error) {
-	articleRepo.db.Where("created_user_id = ?", userID).Find(&articles)
+	articleRepo.db.Where("created_user_id = ? AND is_deleted = ? ", userID, 0).Find(&articles)
+
+	// レコードがない場合
+	if len(articles) == 0 {
+		return nil, errors.New("record not found")
+	}
+
 	return
 }
 
@@ -98,24 +115,41 @@ func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.
 	for i := 0; i < len(articleIds); i++ {
 		// TODO: 要修正 毎回articleを作ってる
 		var article = model.Article{}
-		articleRepo.db.Where("article_id = ?", articleIds[i].ArticleID).Find(&article)
+		articleRepo.db.Where("article_id = ? AND is_deleted = ?", articleIds[i].ArticleID, 0).Find(&article)
 		articles = append(articles, article)
 	}
+
+	// レコードがない場合
+	if len(articles) == 0 {
+		return nil, errors.New("record not found")
+	}
+
 	return
 }
 
 // 指定したトピックを含む記事のIDを取得
 func (articleRepo *articleInfraStruct) FindArticleIdsByTopicId(topicID uint) (articleIds []model.ArticleTopic, err error) {
-	// SELECT * FROM article_topic WHERE topic_id = :topicID;
-	articleRepo.db.Where("topic_id = ?", topicID).Find(&articleIds)
-	return articleIds, err
+	// SELECT * FROM article_topic WHERE topic_id = :topicID AND is_deleted = 0;
+	articleRepo.db.Where("topic_id = ? AND is_deleted = ?", topicID, 0).Find(&articleIds)
+
+	// レコードがない場合
+	if len(articleIds) == 0 {
+		return nil, errors.New("record not found")
+	}
+
+	return
 }
 
 // 最後の記事IDを取得
 func (articleRepo *articleInfraStruct) FindLastArticleId() (lastArticleId uint, err error) {
 	article := model.Article{}
-	// SELECT article_id FROM articles ORDER BY article_id DESC LIMIT 1;
-	articleRepo.db.Select("article_id").Last(&article)
+	// SELECT article_id FROM articles WHERE is_deleted = 0 ORDER BY article_id DESC LIMIT 1;
+	if result := articleRepo.db.Select("article_id").Where("is_deleted = ?", 0).Last(&article); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
+
 	lastArticleId = article.ArticleID
 	return
 }
@@ -137,7 +171,26 @@ func (articleRepo *articleInfraStruct) CheckUpdateArticleTopic(willBeUpdatedArti
 
 // 記事を削除
 func (articleRepo *articleInfraStruct) DeleteArticleByArticleId(articleId uint) (err error) {
-	articleRepo.db.Where("article_id = ?", articleId).Delete(&model.Article{})
+	deleteArticle := model.Article{}
+	// SELECT * FROM article WHERE article_id = :articleId AND is_deleted = 0;
+	if result := articleRepo.db.Find(&deleteArticle, "article_id = ? AND is_deleted = ?", articleId, 0); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	deleteTime := time.Now().Format(dateFormat)
+	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+
+	// 削除状態に更新
+	articleRepo.db.Model(&deleteArticle).
+		Where("article_id = ? AND is_deleted = ?", articleId, 0).
+		Updates(map[string]interface{}{
+			"deleted_date": customisedDeleteTime,
+			"is_deleted":   int8(1),
+		})
+
 	return nil
-	//TODO: 削除に失敗した場合
 }
