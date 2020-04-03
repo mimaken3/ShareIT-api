@@ -8,6 +8,7 @@ import (
 var userService service.UserServiceInterface
 var articleService service.ArticleServiceInterface
 var articleTopicService service.ArticleTopicServiceInterface
+var topicService service.TopicServiceInterface
 
 func DI() {
 	// ユーザ
@@ -19,6 +20,11 @@ func DI() {
 	// DBと直接やり取りをするrepositoryにDBの情報を外部から注入
 	articleRepo := infrastructure.NewArticleDB(infrastructure.DB)
 	articleService = service.NewArticleService(articleRepo)
+
+	// トピック
+	// DBと直接やり取りをするrepositoryにDBの情報を外部から注入
+	topicRepo := infrastructure.NewTopicDB(infrastructure.DB)
+	topicService = service.NewTopicService(topicRepo)
 
 	// 記事とトピック
 	// DBと直接やり取りをするrepositoryにDBの情報を外部から注入

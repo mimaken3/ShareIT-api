@@ -53,6 +53,9 @@ func InitRouting(e *echo.Echo) {
 	// 最後の記事IDを取得
 	e.GET("/article/lastArticleId", handler.FindLastArticleId())
 
+	// トピックを作成
+	e.POST("/topic/create", handler.CreateTopic())
+
 	handler.DI()
 	log.Println("Server running...")
 }
