@@ -47,6 +47,5 @@ DROP TABLE IF EXISTS article_topics;
 CREATE TABLE article_topics(
   article_topic_id INT UNSIGNED NOT NULL PRIMARY KEY,
   article_id INT UNSIGNED NOT NULL,
-  topic_id INT UNSIGNED NOT NULL, 
-  is_deleted TINYINT(1) NOT NULL DEFAULT '0'
+  topic_id INT UNSIGNED NOT NULL
 );
