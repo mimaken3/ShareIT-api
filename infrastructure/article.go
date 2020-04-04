@@ -144,7 +144,7 @@ func (articleRepo *articleInfraStruct) FindArticleIdsByTopicId(topicID uint) (ar
 func (articleRepo *articleInfraStruct) FindLastArticleId() (lastArticleId uint, err error) {
 	article := model.Article{}
 	// SELECT article_id FROM articles WHERE is_deleted = 0 ORDER BY article_id DESC LIMIT 1;
-	if result := articleRepo.db.Select("article_id").Where("is_deleted = ?", 0).Last(&article); result.Error != nil {
+	if result := articleRepo.db.Select("article_id").Last(&article); result.Error != nil {
 		// レコードがない場合
 		err = result.Error
 		return
