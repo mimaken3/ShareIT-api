@@ -52,8 +52,18 @@ func (articleTopicRepo *articleTopicInfraStruct) FindLastArticleTopicId() (lastA
 
 // 記事に紐づくトピックを削除
 func (articleTopicRepo *articleTopicInfraStruct) DeleteArticleTopic(willBeDeletedArticle model.Article) {
-	articleId := willBeDeletedArticle.ArticleID
-	articleTopic := model.ArticleTopic{}
+	uintArticleID := willBeDeletedArticle.ArticleID
 
-	articleTopicRepo.db.Where("article_id = ?", articleId).Delete(&articleTopic)
+	// 削除対象のmodel
+	articleTopic := model.ArticleTopic{}
+	articleTopic.ArticleID = uintArticleID
+	articleTopic.IsDeleted = 0
+
+	// 更新対象のmodel
+	updateArticleTopic := model.ArticleTopic{}
+	updateArticleTopic.ArticleID = uintArticleID
+	updateArticleTopic.IsDeleted = 1
+
+	// 削除状態に更新
+	articleTopicRepo.db.Model(&articleTopic).Update(&updateArticleTopic)
 }
