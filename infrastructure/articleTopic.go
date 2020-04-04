@@ -18,7 +18,7 @@ func NewArticleTopicDB(db *gorm.DB) repository.ArticleTopicRepository {
 	return &articleTopicInfraStruct{db: db}
 }
 
-// 記事に紐づくトピックを追加
+// 記事に紐づく記事トピックを追加
 func (articleTopicRepo *articleTopicInfraStruct) CreateArticleTopic(article model.Article, lastArticleTopicId uint) {
 	articleTopic := model.ArticleTopic{}
 	articleID := article.ArticleID
