@@ -27,26 +27,6 @@ func (uiRepo *userInterestedTopicInfraStruct) GetLastID() (lastID int, err error
 	return
 }
 
-// articleTopic := model.ArticleTopic{}
-// articleID := article.ArticleID
-// topicsStr := article.ArticleTopics
-// topicsArr := strings.Split(topicsStr, ",")
-//
-// // 記事トピックID
-// insertArticleTopicId := lastArticleTopicId
-//
-// for _, topicStr := range topicsArr {
-// 	insertArticleTopicId = insertArticleTopicId + 1
-// 	if topicStr != "" {
-// 		topicID, _ := strconv.Atoi(topicStr)
-// 		// INSERT INTO article_topics VALUES(:lastArticleTopicId + 1, :articleID, :topicID);
-// 		articleTopic.ArticleTopicID = insertArticleTopicId
-// 		articleTopic.ArticleID = articleID
-// 		articleTopic.TopicID = uint(topicID)
-// 		articleTopicRepo.db.Create(&articleTopic)
-// 	}
-// }
-
 // 追加
 func (uiRepo *userInterestedTopicInfraStruct) CreateUserTopic(topicStr string, lastID int, userID uint) (err error) {
 	ui := model.UserInterestedTopic{}
