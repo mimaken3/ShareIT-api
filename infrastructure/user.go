@@ -18,6 +18,7 @@ func NewUserDB(db *gorm.DB) repository.UserRepository {
 	return &userInfraStruct{db: db}
 }
 
+// ユーザを登録するのときのみ使用
 type SignUpUser struct {
 	UserID      uint      `gorm:"primary_key" json:"user_id"`
 	UserName    string    `gorm:"size:255" json:"user_name"`
@@ -35,7 +36,18 @@ func (SignUpUser) TableName() string {
 
 // 全ユーザを取得
 func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) {
-	userRepo.db.Find(&users, "is_deleted = ?", 0)
+	rows, err := userRepo.db.Raw("SELECT u.user_id, u.user_name, u.email, u.password, group_concat(ui.topic_id) " +
+		"as interested_topics, u.created_date, u.updated_date, u.deleted_date from users as u, " +
+		"user_interested_topics as ui where u.user_id = ui.user_id and u.is_deleted = 0 group by u.user_id").Rows()
+
+	defer rows.Close()
+	for rows.Next() {
+		user := model.User{}
+		err = userRepo.db.ScanRows(rows, &user)
+		if err == nil {
+			users = append(users, user)
+		}
+	}
 
 	// レコードがない場合
 	if len(users) == 0 {
@@ -74,7 +86,11 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 
 // ユーザを取得
 func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, err error) {
-	if result := userRepo.db.Find(&user, "user_id = ? AND is_deleted = ?", userId, 0); result.Error != nil {
+	result := userRepo.db.Raw("SELECT u.user_id, u.user_name, u.email, u.password, group_concat(ui.topic_id) as interested_topics, "+
+		"u.created_date, u.updated_date, u.deleted_date from users as u, user_interested_topics as ui where "+
+		"u.user_id = ui.user_id and u.user_id = ? and u.is_deleted = 0 group by u.user_id", userId).Scan(&user)
+
+	if result.Error != nil {
 		// レコードがない場合
 		err = result.Error
 	}
@@ -132,36 +148,5 @@ func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 
 // ユーザのinterested_topicsにあるトピックを削除
 func (userRepo *userInfraStruct) DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error) {
-	// var topicIDArrFromAT []int
-	// var createdUserIDArr []int
-	//
-	// rows, err := userRepo.db.Raw("SELECT article_id FROM article_topics WHERE topic_id = ?", deleteTopicID).Rows()
-	//
-	// defer rows.Close()
-	// for rows.Next() {
-	// 	article_id := 0
-	// 	err = rows.Scan(&article_id)
-	// 	if err == nil {
-	// 		topicIDArrFromAT = append(topicIDArrFromAT, article_id)
-	// 	}
-	// }
-	//
-	// // レコードがない場合
-	// if len(topicIDArrFromAT) == 0 {
-	// 	return err
-	// }
-	//
-	// userIDRows, err := userRepo.db.Raw("SELECT created_user_id FROM articles WHERE article_id IN (?)", topicIDArrFromAT).Rows()
-	// defer rows.Close()
-	// for userIDRows.Next() {
-	// 	userID := 0
-	// 	err = userIDRows.Scan(&userID)
-	// 	if err == nil {
-	// 		createdUserIDArr = append(createdUserIDArr, userID)
-	// 	}
-	// }
-	//
-	// fmt.Println(createdUserIDArr)
-
 	return
 }
