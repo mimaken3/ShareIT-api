@@ -54,3 +54,30 @@ func (topicRepo *topicInfraStruct) CreateTopic(createTopic model.Topic, lastTopi
 	topicRepo.db.Create(&createdTopic)
 	return
 }
+
+// トピックを削除
+func (topicRepo *topicInfraStruct) DeleteTopicByTopicID(uintTopicID uint) (err error) {
+	deleteTopic := model.Topic{}
+
+	// SELECT * FROM topic WHERE topic_id = :uinttopicID AND is_deleted = 0;
+	if result := topicRepo.db.Find(&deleteTopic, "topic_id = ? AND is_deleted = ?", uintTopicID, 0); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	deleteTime := time.Now().Format(dateFormat)
+	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+
+	// 削除状態に更新
+	topicRepo.db.Model(&deleteTopic).
+		Where("topic_id = ? AND is_deleted = ?", uintTopicID, 0).
+		Updates(map[string]interface{}{
+			"deleted_date": customisedDeleteTime,
+			"is_deleted":   int8(1),
+		})
+
+	return nil
+}

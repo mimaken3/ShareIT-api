@@ -49,3 +49,13 @@ CREATE TABLE article_topics(
   article_id INT UNSIGNED NOT NULL,
   topic_id INT UNSIGNED NOT NULL
 );
+
+-- ユーザの興味のあるトピック
+DROP TABLE IF EXISTS user_interested_topics;
+
+CREATE TABLE user_interested_topics(
+user_interested_topics_id INT UNSIGNED NOT NULL PRIMARY KEY,
+user_id INT UNSIGNED NOT NULL,
+topic_id INT UNSIGNED NOT NULL
+);
+

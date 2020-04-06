@@ -9,4 +9,7 @@ type TopicRepository interface {
 
 	// トピックを登録
 	CreateTopic(createTopic model.Topic, lastTopicID uint) (createdTopic model.Topic, err error)
+
+	// トピックを削除
+	DeleteTopicByTopicID(uintTopicID uint) (err error)
 }

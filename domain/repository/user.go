@@ -18,4 +18,7 @@ type UserRepository interface {
 
 	// 最後のユーザIDを取得
 	FindLastUserId() (lastUserId uint, err error)
+
+	// ユーザのinterested_topicsにあるトピックを削除
+	DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error)
 }

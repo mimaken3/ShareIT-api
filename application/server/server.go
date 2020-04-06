@@ -56,6 +56,9 @@ func InitRouting(e *echo.Echo) {
 	// トピックを作成
 	e.POST("/topic/create", handler.CreateTopic())
 
+	// トピックを削除
+	e.DELETE("/topic/:topic_id", handler.DeleteTopicByTopicID())
+
 	handler.DI()
 	log.Println("Server running...")
 }

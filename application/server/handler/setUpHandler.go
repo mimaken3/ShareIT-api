@@ -9,6 +9,7 @@ var userService service.UserServiceInterface
 var articleService service.ArticleServiceInterface
 var articleTopicService service.ArticleTopicServiceInterface
 var topicService service.TopicServiceInterface
+var userInterestedTopicService service.UserInterestedTopicServiceInterface
 
 func DI() {
 	// ユーザ
@@ -30,4 +31,8 @@ func DI() {
 	// DBと直接やり取りをするrepositoryにDBの情報を外部から注入
 	articleTopicRepo := infrastructure.NewArticleTopicDB(infrastructure.DB)
 	articleTopicService = service.NewArticleTopicService(articleTopicRepo)
+
+	// ユーザと興味のあるトピック
+	userInterestedTopicRepo := infrastructure.NewUserInterestedTopicDB(infrastructure.DB)
+	userInterestedTopicService = service.NewUserInterestedTopicService(userInterestedTopicRepo)
 }

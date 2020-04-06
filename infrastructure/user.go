@@ -104,3 +104,39 @@ func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 
 	return
 }
+
+// ユーザのinterested_topicsにあるトピックを削除
+func (userRepo *userInfraStruct) DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error) {
+	// var topicIDArrFromAT []int
+	// var createdUserIDArr []int
+	//
+	// rows, err := userRepo.db.Raw("SELECT article_id FROM article_topics WHERE topic_id = ?", deleteTopicID).Rows()
+	//
+	// defer rows.Close()
+	// for rows.Next() {
+	// 	article_id := 0
+	// 	err = rows.Scan(&article_id)
+	// 	if err == nil {
+	// 		topicIDArrFromAT = append(topicIDArrFromAT, article_id)
+	// 	}
+	// }
+	//
+	// // レコードがない場合
+	// if len(topicIDArrFromAT) == 0 {
+	// 	return err
+	// }
+	//
+	// userIDRows, err := userRepo.db.Raw("SELECT created_user_id FROM articles WHERE article_id IN (?)", topicIDArrFromAT).Rows()
+	// defer rows.Close()
+	// for userIDRows.Next() {
+	// 	userID := 0
+	// 	err = userIDRows.Scan(&userID)
+	// 	if err == nil {
+	// 		createdUserIDArr = append(createdUserIDArr, userID)
+	// 	}
+	// }
+	//
+	// fmt.Println(createdUserIDArr)
+
+	return
+}
