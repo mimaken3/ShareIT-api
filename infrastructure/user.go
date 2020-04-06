@@ -18,6 +18,21 @@ func NewUserDB(db *gorm.DB) repository.UserRepository {
 	return &userInfraStruct{db: db}
 }
 
+type SignUpUser struct {
+	UserID      uint      `gorm:"primary_key" json:"user_id"`
+	UserName    string    `gorm:"size:255" json:"user_name"`
+	Email       string    `gorm:"size:255" json:"email"`
+	Password    string    `gorm:"size:255" json:"password"`
+	CreatedDate time.Time `json:"created_date"`
+	UpdatedDate time.Time `json:"updated_date"`
+	DeletedDate time.Time `json:"deleted_date"`
+	IsDeleted   int8      `json:"-"`
+}
+
+func (SignUpUser) TableName() string {
+	return "users"
+}
+
 // 全ユーザを取得
 func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) {
 	userRepo.db.Find(&users, "is_deleted = ?", 0)
@@ -71,6 +86,8 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 	// TODO: パスワードハッシュ化、もしくはDB通信エラーで使用予定
 	var err error
 
+	signUpUser := SignUpUser{}
+
 	// 現在の日付を取得
 	const dateFormat = "2006-01-02 15:04:05"
 	nowTime := time.Now().Format(dateFormat)
@@ -79,14 +96,22 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 	const defaultDeletedDateStr = "9999-12-31 23:59:59"
 	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
 
+	signUpUser.UserID = lastUserId + 1
+	signUpUser.UserName = user.UserName
+	signUpUser.Email = user.Email
+	signUpUser.Password = user.Password
+	signUpUser.CreatedDate = customisedNowTime
+	signUpUser.UpdatedDate = customisedNowTime
+	signUpUser.DeletedDate = defaultDeletedDate
+
+	userRepo.db.Create(&signUpUser)
+
 	user.UserID = lastUserId + 1
 	user.CreatedDate = customisedNowTime
 	user.UpdatedDate = customisedNowTime
 	user.DeletedDate = defaultDeletedDate
 
-	userRepo.db.Create(&user)
-
-	// セキュリティのためパスワードを返さない
+	// セキュリティのためパスワードは返さない
 	user.Password = ""
 
 	return user, err

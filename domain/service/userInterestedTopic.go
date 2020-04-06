@@ -11,7 +11,7 @@ type userInterestedTopicServiceStruct struct {
 // Application層はこのInterfaceに依存
 type UserInterestedTopicServiceInterface interface {
 	// 追加
-	// CreateUserTopic(topicArr []int) (err error)
+	CreateUserTopic(topicStr string, userID uint) (err error)
 
 	// 更新
 	// UpdateUserTopic(topicArr []int) (err error)

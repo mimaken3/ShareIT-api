@@ -1,6 +1,9 @@
 package infrastructure
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/jinzhu/gorm"
 	"github.com/mimaken3/ShareIT-api/domain/model"
 	"github.com/mimaken3/ShareIT-api/domain/repository"
@@ -16,10 +19,52 @@ func NewUserInterestedTopicDB(db *gorm.DB) repository.UserInterestedTopicReposit
 }
 
 // 最後のIDを取得
-// getLastID() (lastID int, err error)
+func (uiRepo *userInterestedTopicInfraStruct) GetLastID() (lastID int, err error) {
+	ui := model.UserInterestedTopic{}
+	uiRepo.db.Select("user_interested_topics_id").Last(&ui)
+	lastID = int(ui.UserInterestedTopicsID)
+
+	return
+}
+
+// articleTopic := model.ArticleTopic{}
+// articleID := article.ArticleID
+// topicsStr := article.ArticleTopics
+// topicsArr := strings.Split(topicsStr, ",")
+//
+// // 記事トピックID
+// insertArticleTopicId := lastArticleTopicId
+//
+// for _, topicStr := range topicsArr {
+// 	insertArticleTopicId = insertArticleTopicId + 1
+// 	if topicStr != "" {
+// 		topicID, _ := strconv.Atoi(topicStr)
+// 		// INSERT INTO article_topics VALUES(:lastArticleTopicId + 1, :articleID, :topicID);
+// 		articleTopic.ArticleTopicID = insertArticleTopicId
+// 		articleTopic.ArticleID = articleID
+// 		articleTopic.TopicID = uint(topicID)
+// 		articleTopicRepo.db.Create(&articleTopic)
+// 	}
+// }
 
 // 追加
-// CreateUserTopic(topicArr []int) (err error)
+func (uiRepo *userInterestedTopicInfraStruct) CreateUserTopic(topicStr string, lastID int, userID uint) (err error) {
+	ui := model.UserInterestedTopic{}
+	topicsArr := strings.Split(topicStr, ",")
+	var insertID uint = uint(lastID)
+
+	for _, topicStr := range topicsArr {
+		insertID = insertID + 1
+		if topicStr != "" {
+			topicID, _ := strconv.Atoi(topicStr)
+			ui.UserInterestedTopicsID = insertID
+			ui.UserID = userID
+			ui.TopicID = uint(topicID)
+			uiRepo.db.Create(&ui)
+		}
+	}
+	return
+}
 
 // 更新
 // UpdateUserTopic(topicArr []int) (err error)

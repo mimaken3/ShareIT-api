@@ -6,7 +6,6 @@ CREATE TABLE users(
   user_name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   password VARCHAR(255) NOT NULL,
-  interested_topics VARCHAR(255),
   created_date DATETIME NOT NULL,
   updated_date DATETIME NOT NULL,
   deleted_date DATETIME NOT NULL, 

@@ -3,10 +3,10 @@ package repository
 // UserInterestedTopicRepository is interface for infrastructure
 type UserInterestedTopicRepository interface {
 	// 最後のIDを取得
-	// getLastID() (lastID int, err error)
+	GetLastID() (lastID int, err error)
 
 	// 追加
-	// CreateUserTopic(topicArr []int) (err error)
+	CreateUserTopic(topicStr string, lastID int, userID uint) (err error)
 
 	// 更新
 	// UpdateUserTopic(topicArr []int) (err error)

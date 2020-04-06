@@ -59,6 +59,10 @@ func SignUpUser() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, signUpedUser)
 		}
+
+		// トピックを登録
+		userInterestedTopicService.CreateUserTopic(signUpedUser.InterestedTopics, signUpedUser.UserID)
+
 		return c.JSON(http.StatusOK, signUpedUser)
 	}
 }
