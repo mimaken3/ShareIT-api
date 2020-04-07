@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/mimaken3/ShareIT-api/domain/model"
@@ -49,18 +50,22 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 			return err
 		}
 
+		// 記事トピックの末尾に,があったらそれを削除
+		articleTopics := willBeUpdatedArticle.ArticleTopics
+		if strings.LastIndex(articleTopics, ",") == len(articleTopics)-1 {
+			willBeUpdatedArticle.ArticleTopics = strings.TrimSuffix(articleTopics, ",")
+		}
+
 		// 記事トピックが更新されているか確認
 		isUpdatedArticleTopic := articleService.CheckUpdateArticleTopic(willBeUpdatedArticle)
 
+		if isUpdatedArticleTopic {
+			// 記事トピックを更新
+			articleTopicService.UpdateArticleTopic(willBeUpdatedArticle)
+		}
+
 		// 記事を更新
 		updatedArticle, err := articleService.UpdateArticleByArticleId(willBeUpdatedArticle)
-
-		if err == nil {
-			if isUpdatedArticleTopic {
-				// 記事トピックを更新
-				articleTopicService.UpdateArticleTopic(willBeUpdatedArticle)
-			}
-		}
 
 		if err != nil {
 			//TODO: Badステータスを返す

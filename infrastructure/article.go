@@ -18,7 +18,7 @@ func NewArticleDB(db *gorm.DB) repository.ArticleRepository {
 	return &articleInfraStruct{db: db}
 }
 
-// ユーザを登録するのときのみ使用
+// 登録or更新するのときのみ使用
 type CreateArticle struct {
 	ArticleID      uint      `gorm:"primary_key" json:"article_id"`
 	ArticleTitle   string    `gorm:"size:255" json:"article_title"`
@@ -104,7 +104,6 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 	// 更新するフィールドを設定
 	updateTitle := willBeUpdatedArticle.ArticleTitle
 	updateContent := willBeUpdatedArticle.ArticleContent
-	updateTopics := willBeUpdatedArticle.ArticleTopics
 
 	// 更新
 	articleRepo.db.Model(&updatedArticle).
@@ -112,12 +111,12 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 		Updates(map[string]interface{}{
 			"article_title":   updateTitle,
 			"article_content": updateContent,
-			"article_topics":  updateTopics,
 			"updated_date":    customisedUpdateTime,
 		})
 
 	// updateで値の入ってないフィールドに値を格納
 	updatedArticle.ArticleID = willBeUpdatedArticle.ArticleID
+	updatedArticle.ArticleTopics = willBeUpdatedArticle.ArticleTopics
 	updatedArticle.CreatedUserID = willBeUpdatedArticle.CreatedUserID
 	updatedArticle.CreatedDate = willBeUpdatedArticle.CreatedDate
 	updatedArticle.DeletedDate = willBeUpdatedArticle.DeletedDate
@@ -186,7 +185,10 @@ func (articleRepo *articleInfraStruct) CheckUpdateArticleTopic(willBeUpdatedArti
 	article := model.Article{}
 	updateArticleId := willBeUpdatedArticle.ArticleID
 	topicsStr := willBeUpdatedArticle.ArticleTopics
-	articleRepo.db.Where("article_id = ?", updateArticleId).Find(&article)
+
+	articleRepo.db.Raw("select a.article_id, a.article_title, a.created_user_id, a.article_content, "+
+		"group_concat(att.topic_id order by att.article_topic_id) as article_topics, a.created_date, a.updated_date, a.deleted_date "+
+		"from articles as a, article_topics as att where a.article_id = att.article_id and a.article_id = ? and is_deleted = 0 group by a.article_id", updateArticleId).Scan(&article)
 
 	if article.ArticleTopics == topicsStr {
 		// 記事トピックが更新されていない場合
