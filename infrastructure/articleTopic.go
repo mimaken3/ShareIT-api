@@ -60,6 +60,26 @@ func (articleTopicRepo *articleTopicInfraStruct) DeleteArticleTopic(willBeDelete
 
 // トピックに紐づく記事トピックを削除
 func (articleTopicRepo *articleTopicInfraStruct) DeleteArticleTopicByTopicID(topicID uint) (err error) {
+	// 記事トピックが1つしかない場合、それを「その他(1)」に更新
+	var articleTopicIDs []uint
+	rows, err := articleTopicRepo.db.Raw("select t2.article_topic_id from(select article_id, c from ("+
+		"select article_id, count(*) as c from article_topics group by article_id) as t where t.c = 1) as t1 inner join "+
+		"(select * from article_topics where topic_id = ?) as t2 on t1.article_id = t2.article_id", topicID).Rows()
+	defer rows.Close()
+	for rows.Next() {
+		var articleTopicID uint
+		err = rows.Scan(&articleTopicID)
+		if err == nil {
+			articleTopicIDs = append(articleTopicIDs, articleTopicID)
+		}
+	}
+
+	if len(articleTopicIDs) != 0 {
+		// 「その他」に更新
+		// UPDATE article_topics SET topic_id = 0 WHERE article_topic_id IN (?);
+		articleTopicRepo.db.Table("article_topics").Where("article_topic_id IN (?)", articleTopicIDs).Update("topic_id", 1)
+	}
+
 	// 物理削除
 	articleTopicRepo.db.Where("topic_id = ?", topicID).Delete(&model.ArticleTopic{})
 
