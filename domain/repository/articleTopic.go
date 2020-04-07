@@ -12,4 +12,7 @@ type ArticleTopicRepository interface {
 
 	// 記事に紐づくトピックを削除
 	DeleteArticleTopic(willBeDeletedArticle model.Article)
+
+	// トピックに紐づく記事トピックを削除
+	DeleteArticleTopicByTopicID(topicID uint) (err error)
 }

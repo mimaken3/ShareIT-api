@@ -45,19 +45,17 @@ func DeleteTopicByTopicID() echo.HandlerFunc {
 
 		fmt.Println(errUser)
 
+		// トピックに紐づく記事トピックを削除
+		errAT := articleTopicService.DeleteArticleTopicByTopicID(uintTopicID)
+
+		fmt.Println(errAT)
+
 		// ユーザのinterested_topicsにあるトピックを削除
 		// userDeleteErr := userService.DeleteTopicFromInterestedTopics(uintTopicID)
 
 		// if userDeleteErr != nil {
 		// 	fmt.Println("cannot delete user's interested_topics")
 		// }
-
-		// articlesにあるトピックを削除
-
-		// article_topicsにあるトピックを削除
-		// willBeDeletedArticle := model.ArticleTopic{}
-		// willBeDeletedArticle.TopicID = uintTopicID
-		// at.articleTopicRepo.DeleteArticleTopic(willBeDeletedArticle)
 
 		return c.String(http.StatusOK, "Success Delete!")
 	}

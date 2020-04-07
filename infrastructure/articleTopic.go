@@ -57,3 +57,11 @@ func (articleTopicRepo *articleTopicInfraStruct) DeleteArticleTopic(willBeDelete
 	// 物理削除
 	articleTopicRepo.db.Where("article_id = ?", uintArticleID).Delete(&model.ArticleTopic{})
 }
+
+// トピックに紐づく記事トピックを削除
+func (articleTopicRepo *articleTopicInfraStruct) DeleteArticleTopicByTopicID(topicID uint) (err error) {
+	// 物理削除
+	articleTopicRepo.db.Where("topic_id = ?", topicID).Delete(&model.ArticleTopic{})
+
+	return
+}
