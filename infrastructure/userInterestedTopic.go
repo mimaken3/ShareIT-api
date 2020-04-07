@@ -27,7 +27,7 @@ func (uiRepo *userInterestedTopicInfraStruct) GetLastID() (lastID int, err error
 	return
 }
 
-// 追加
+// 追加(複数ok)
 func (uiRepo *userInterestedTopicInfraStruct) CreateUserTopic(topicStr string, lastID int, userID uint) (err error) {
 	ui := model.UserInterestedTopic{}
 	topicsArr := strings.Split(topicStr, ",")

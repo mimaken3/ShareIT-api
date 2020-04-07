@@ -55,6 +55,8 @@ func SignUpUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := model.User{}
 		c.Bind(&user)
+
+		// ユーザを登録
 		signUpedUser, err := userService.SignUpUser(user)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, signUpedUser)

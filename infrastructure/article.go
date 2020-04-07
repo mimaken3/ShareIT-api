@@ -18,6 +18,22 @@ func NewArticleDB(db *gorm.DB) repository.ArticleRepository {
 	return &articleInfraStruct{db: db}
 }
 
+// ユーザを登録するのときのみ使用
+type CreateArticle struct {
+	ArticleID      uint      `gorm:"primary_key" json:"article_id"`
+	ArticleTitle   string    `gorm:"size:255" json:"article_title"`
+	CreatedUserID  uint      `json:"created_user_id"`
+	ArticleContent string    `gorm:"size:1000" json:"article_content"`
+	CreatedDate    time.Time `json:"created_date"`
+	UpdatedDate    time.Time `json:"updated_date"`
+	DeletedDate    time.Time `json:"deleted_date"`
+	IsDeleted      int8      `json:"-"`
+}
+
+func (CreateArticle) TableName() string {
+	return "articles"
+}
+
 // 全記事を取得
 func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Article, err error) {
 	articleRepo.db.Find(&articles, "is_deleted = ?", 0)
@@ -50,7 +66,20 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	const defaultDeletedDateStr = "9999-12-31 23:59:59"
 	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
 
+	ar := CreateArticle{}
+
 	// DBに保存する記事のモデルを作成
+	ar.ArticleID = lastArticleId + 1
+	ar.ArticleTitle = createArticle.ArticleTitle
+	ar.CreatedUserID = createArticle.CreatedUserID
+	ar.ArticleContent = createArticle.ArticleContent
+	ar.CreatedDate = customisedNowTime
+	ar.UpdatedDate = customisedNowTime
+	ar.DeletedDate = defaultDeletedDate
+
+	articleRepo.db.Create(&ar)
+
+	// DBに保存した記事を返す
 	createdArticle.ArticleID = lastArticleId + 1
 	createdArticle.ArticleTitle = createArticle.ArticleTitle
 	createdArticle.CreatedUserID = createArticle.CreatedUserID
@@ -59,8 +88,6 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	createdArticle.CreatedDate = customisedNowTime
 	createdArticle.UpdatedDate = customisedNowTime
 	createdArticle.DeletedDate = defaultDeletedDate
-
-	articleRepo.db.Create(&createdArticle)
 
 	return
 }
