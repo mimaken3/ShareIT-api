@@ -33,6 +33,25 @@ func (topicRepo *topicInfraStruct) FindLastTopicID() (lastTopicID uint, err erro
 	return
 }
 
+// トピック名の重複チェック
+func (topicRepo *topicInfraStruct) CheckTopicName(topicName string) (isDuplicated bool, message string, err error) {
+	topic := model.Topic{}
+
+	// select * from topics where is_deleted = 0 and topic_name = topicName;
+	if result := topicRepo.db.Where("is_deleted = ? AND topic_name = ?", 0, topicName).Find(&topic); result.Error != nil {
+		// レコードがない場合
+		isDuplicated = false
+		message = topicName + "is not duplicated"
+		return
+	}
+
+	// 重複しているレコードがあった場合
+	isDuplicated = true
+	message = topicName + " is duplicated as '" + topic.TopicName + "'"
+
+	return
+}
+
 // トピックを登録
 func (topicRepo *topicInfraStruct) CreateTopic(createTopic model.Topic, lastTopicID uint) (createdTopic model.Topic, err error) {
 	// 現在の日付を取得

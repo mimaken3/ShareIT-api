@@ -14,6 +14,9 @@ type TopicServiceInterface interface {
 	// 最後のトピックIDを取得
 	// FindLastTopicID() (lastTopicID uint, err error)
 
+	// トピック名の重複チェック
+	CheckTopicName(topicName string) (isDuplicated bool, message string, err error)
+
 	// トピックを登録
 	CreateTopic(createTopic model.Topic) (createdTopic model.Topic, err error)
 

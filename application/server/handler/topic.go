@@ -9,11 +9,42 @@ import (
 	"github.com/mimaken3/ShareIT-api/domain/model"
 )
 
+// 重複したトピックのJSON用
+type DuplicatedTopic struct {
+	IsDuplicated bool   `json:"is_duplicated"`
+	Message      string `json:"message"`
+}
+
+// トピック名の重複チェック
+// func CheckTopicName() echo.HandlerFunc {
+// 	return func(c echo.Context) error {
+// 		topic := model.Topic{}
+// 		c.Bind(&topic)
+//
+// 		isDuplicated, message, err := topicService.CheckTopicName(topic.TopicName)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return c.String(http.StatusOK, "isDuplicated:"+strconv.FormatBool(isDuplicated)+" message:"+message)
+// 	}
+// }
+
 // トピックを作成
 func CreateTopic() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		topic := model.Topic{}
 		c.Bind(&topic)
+
+		// トピック名の重複チェック
+		isDuplicated, message, err := topicService.CheckTopicName(topic.TopicName)
+		if isDuplicated {
+			// 重複していたらエラーメッセージを返す
+			dt := DuplicatedTopic{
+				IsDuplicated: isDuplicated,
+				Message:      message,
+			}
+			return c.JSON(http.StatusBadRequest, dt)
+		}
 
 		createdTopic, err := topicService.CreateTopic(topic)
 
