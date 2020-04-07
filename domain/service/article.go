@@ -29,7 +29,7 @@ type ArticleServiceInterface interface {
 	// 特定のトピックを含む記事を取得
 	FindArticlesByTopicIdService(articleIds []model.ArticleTopic) (articles []model.Article, err error)
 
-	// 指定したトピックを含む記事のIDを取得
+	// 指定したトピックを含む記事トピックを取得
 	FindArticleIdsByTopicIdService(topicID uint) (articleIds []model.ArticleTopic, err error)
 
 	// 最後の記事IDを取得

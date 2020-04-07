@@ -151,13 +151,19 @@ func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint) (articl
 	return
 }
 
-// 特定のトピックを含む記事を取得
+// 特定のトピックを含む全記事を取得
 func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.ArticleTopic) (articles []model.Article, err error) {
 	for i := 0; i < len(articleIds); i++ {
 		// TODO: 要修正 毎回articleを作ってる
 		var article = model.Article{}
-		articleRepo.db.Where("article_id = ? AND is_deleted = ?", articleIds[i].ArticleID, 0).Find(&article)
-		articles = append(articles, article)
+
+		result := articleRepo.db.Raw("select a.article_id, a.article_title, a.created_user_id, a.article_content, "+
+			"group_concat(att.topic_id order by att.article_topic_id) as article_topics, a.created_date, a.updated_date, a.deleted_date "+
+			"from articles as a, article_topics as att where a.article_id = att.article_id and a.article_id = ? and is_deleted = 0 group by a.article_id", articleIds[i].ArticleID).Scan(&article)
+		if result.Error == nil {
+			articles = append(articles, article)
+		}
+
 	}
 
 	// レコードがない場合
@@ -168,10 +174,10 @@ func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.
 	return
 }
 
-// 指定したトピックを含む記事のIDを取得
+// 指定したトピックを含む記事トピックを取得
 func (articleRepo *articleInfraStruct) FindArticleIdsByTopicId(topicID uint) (articleIds []model.ArticleTopic, err error) {
-	// SELECT * FROM article_topic WHERE topic_id = :topicID AND is_deleted = 0;
-	articleRepo.db.Where("topic_id = ? AND is_deleted = ?", topicID, 0).Find(&articleIds)
+	// SELECT * FROM article_topics WHERE topic_id = :topicID AND is_deleted = 0;
+	articleRepo.db.Where("topic_id = ?", topicID).Find(&articleIds)
 
 	// レコードがない場合
 	if len(articleIds) == 0 {

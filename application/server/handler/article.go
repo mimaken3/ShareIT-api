@@ -156,7 +156,7 @@ func FindArticlesByTopicId() echo.HandlerFunc {
 	}
 }
 
-// 指定したトピックを含む記事のIDを取得
+// 指定したトピックを含む記事トピックを取得
 func FindArticleIdsByTopicId() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		topicID, _ := strconv.Atoi(c.Param("topic_id"))

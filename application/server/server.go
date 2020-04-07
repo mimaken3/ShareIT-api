@@ -47,7 +47,7 @@ func InitRouting(e *echo.Echo) {
 	// 特定のトピックを含む記事を取得
 	e.GET("/articles/topic/:topic_id", handler.FindArticlesByTopicId())
 
-	// 指定したトピックを含む記事のIDを取得
+	// 指定したトピックを含む記事トピックを取得
 	e.GET("/articleIds/:topic_id", handler.FindArticleIdsByTopicId())
 
 	// 最後の記事IDを取得
