@@ -36,7 +36,19 @@ func (CreateArticle) TableName() string {
 
 // 全記事を取得
 func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Article, err error) {
-	articleRepo.db.Find(&articles, "is_deleted = ?", 0)
+	rows, err :=
+		articleRepo.db.Raw("select a.article_id, a.article_title, a.created_user_id, a.article_content, group_concat(att.topic_id order by att.article_topic_id) " +
+			"as article_topics, a.created_date, a.updated_date, a.deleted_date from articles as a, article_topics as att where a.article_id = att.article_id " +
+			"and is_deleted = 0 group by  a.article_id").Rows()
+
+	defer rows.Close()
+	for rows.Next() {
+		article := model.Article{}
+		err = articleRepo.db.ScanRows(rows, &article)
+		if err == nil {
+			articles = append(articles, article)
+		}
+	}
 
 	// レコードがない場合
 	if len(articles) == 0 {
