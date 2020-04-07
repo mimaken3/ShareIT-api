@@ -48,8 +48,11 @@ func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Artic
 
 // 記事を取得
 func (articleRepo *articleInfraStruct) FindArticleByArticleId(articleId uint) (article model.Article, err error) {
-	// SELECT * FROM article WHERE article_id = :articleId AND is_deleted = 0;
-	if result := articleRepo.db.Find(&article, "article_id = ? AND is_deleted = ?", articleId, 0); result.Error != nil {
+	result := articleRepo.db.Raw("select a.article_id, a.article_title, a.created_user_id, a.article_content, "+
+		"group_concat(att.topic_id order by att.article_topic_id) as article_topics, a.created_date, a.updated_date, a.deleted_date "+
+		"from articles as a, article_topics as att where a.article_id = att.article_id and a.article_id = ? and is_deleted = 0 group by a.article_id", articleId).Scan(&article)
+
+	if result.Error != nil {
 		// レコードがない場合
 		err = result.Error
 	}
