@@ -25,6 +25,20 @@ func CreateTopic() echo.HandlerFunc {
 	}
 }
 
+// 全トピックを取得
+func FindAllTopics() echo.HandlerFunc {
+	return func(c echo.Context) error {
+
+		topics, err := topicService.FindAllTopics()
+
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
+		return c.JSON(http.StatusOK, topics)
+	}
+}
+
 // トピックを削除
 func DeleteTopicByTopicID() echo.HandlerFunc {
 	return func(c echo.Context) error {

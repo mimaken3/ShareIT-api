@@ -17,6 +17,9 @@ type TopicServiceInterface interface {
 	// トピックを登録
 	CreateTopic(createTopic model.Topic) (createdTopic model.Topic, err error)
 
+	// 全トピックを取得
+	FindAllTopics() (topics []model.Topic, err error)
+
 	// トピックを削除
 	DeleteTopicByTopicID(uintTopicID uint) (err error)
 }

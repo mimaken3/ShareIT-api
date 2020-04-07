@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -52,6 +53,21 @@ func (topicRepo *topicInfraStruct) CreateTopic(createTopic model.Topic, lastTopi
 
 	// 作成
 	topicRepo.db.Create(&createdTopic)
+	return
+}
+
+// 全トピックを取得
+func (topicRepo *topicInfraStruct) FindAllTopics() (topics []model.Topic, err error) {
+
+	if result := topicRepo.db.Where("is_deleted = ?", 0).Find(&topics); result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(topics) == 0 {
+		// レコードがない場合
+		return nil, errors.New("record not found")
+	}
+
 	return
 }
 
