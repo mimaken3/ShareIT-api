@@ -54,7 +54,7 @@ func DeleteTopicByTopicID() echo.HandlerFunc {
 			return c.String(http.StatusBadRequest, "Cannot delete topic")
 		}
 
-		// ユーザのinterested_topicsを削除
+		// ユーザの興味トピックを削除
 		errUser := userInterestedTopicService.DeleteUserTopicByTopicID(topicID)
 
 		fmt.Println(errUser)
@@ -63,13 +63,6 @@ func DeleteTopicByTopicID() echo.HandlerFunc {
 		errAT := articleTopicService.DeleteArticleTopicByTopicID(uintTopicID)
 
 		fmt.Println(errAT)
-
-		// ユーザのinterested_topicsにあるトピックを削除
-		// userDeleteErr := userService.DeleteTopicFromInterestedTopics(uintTopicID)
-
-		// if userDeleteErr != nil {
-		// 	fmt.Println("cannot delete user's interested_topics")
-		// }
 
 		return c.String(http.StatusOK, "Success Delete!")
 	}
