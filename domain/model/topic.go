@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Topic struct {
-	TopicID        uint      `gorm:"primary_key" json:"user_id"`
+	TopicID        uint      `gorm:"primary_key" json:"topic_id"`
 	TopicName      string    `gorm:"size:255" json:"topic_name"`
 	ProposedUserID uint      `json:"proposed_user_id"`
 	CreatedDate    time.Time `json:"created_date"`
