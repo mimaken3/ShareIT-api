@@ -89,9 +89,39 @@ group by
 
 // 記事を取得
 func (articleRepo *articleInfraStruct) FindArticleByArticleId(articleId uint) (article model.Article, err error) {
-	result := articleRepo.db.Raw("select a.article_id, a.article_title, a.created_user_id, a.article_content, "+
-		"group_concat(att.topic_id order by att.article_topic_id) as article_topics, a.created_date, a.updated_date, a.deleted_date "+
-		"from articles as a, article_topics as att where a.article_id = att.article_id and a.article_id = ? and is_deleted = 0 group by a.article_id", articleId).Scan(&article)
+	result := articleRepo.db.Raw(`
+select 
+  a.article_id, 
+  a.article_title, 
+  a.created_user_id, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id
+  ) as article_topics, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date 
+from 
+  articles as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      at.topic_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+  and a.article_id = ? 
+  and is_deleted = 0 
+group by 
+  a.article_id;
+	`, articleId).Scan(&article)
 
 	if result.Error != nil {
 		// レコードがない場合
