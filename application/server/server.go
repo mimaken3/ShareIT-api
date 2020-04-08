@@ -29,11 +29,8 @@ func InitRouting(e *echo.Echo) {
 	// 記事を投稿
 	e.POST("/user/:user_id/createArticle", handler.CreateArticle())
 
-	// 全記事を取得
+	// 全記事を取得(トピック: 文字列区切り)
 	e.GET("/articles", handler.FindAllArticles())
-
-	// 記事を取得(トピック: 文字列区切り)
-	e.GET("/article/:article_id", handler.FindArticleByArticleId())
 
 	// 記事を取得(トピック: 数値区切り)
 	e.GET("/article/:article_id", handler.FindArticleByArticleId())

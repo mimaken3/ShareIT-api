@@ -170,10 +170,39 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 
 // 特定のユーザの全記事を取得
 func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint) (articles []model.Article, err error) {
-	rows, err :=
-		articleRepo.db.Raw("select a.article_id, a.article_title, a.created_user_id, a.article_content, group_concat(att.topic_id order by att.article_topic_id) "+
-			"as article_topics, a.created_date, a.updated_date, a.deleted_date from articles as a, article_topics as att where a.article_id = att.article_id "+
-			"and a.created_user_id = ? and is_deleted = 0 group by  a.article_id", userID).Rows()
+
+	rows, err := articleRepo.db.Raw(`
+select 
+  a.article_id, 
+  a.article_title, 
+  a.created_user_id, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id
+  ) as article_topics, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date 
+from 
+  articles as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+  and a.created_user_id = ? 
+  and is_deleted = 0 
+group by 
+  a.article_id;
+`, userID).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
