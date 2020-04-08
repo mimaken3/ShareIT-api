@@ -1,3 +1,5 @@
 cmd/cmd
 cmd/__debug_bin
 .env
+
+import-data-to-db/
