@@ -16,6 +16,12 @@ type UserRepository interface {
 	// ユーザを登録
 	SignUpUser(user model.User, lastUserId uint) (signedUpUser model.User, err error)
 
+	// パスワードをハッシュ化
+	PasswordToHash(password string) (hashedPassword string, err error)
+
+	// パスワードが一致するかのチェック
+	VerifyPassword(user model.User) (loginUser model.User, err error)
+
 	// 最後のユーザIDを取得
 	FindLastUserId() (lastUserId uint, err error)
 

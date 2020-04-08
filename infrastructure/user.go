@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/mimaken3/ShareIT-api/domain/model"
 	"github.com/mimaken3/ShareIT-api/domain/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userInfraStruct struct {
@@ -131,6 +132,22 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 	user.Password = ""
 
 	return user, err
+}
+
+// パスワードをハッシュ化
+func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword string, err error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	hashedPassword = string(hash)
+	return
+}
+
+// パスワードが一致するかのチェック
+func (userRepo *userInfraStruct) VerifyPassword(user model.User) (loginUser model.User, err error) {
+	// https://mossa.dev/post/go_password-hash/
+	return
 }
 
 // 最後のユーザIDを取得
