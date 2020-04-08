@@ -32,8 +32,14 @@ func InitRouting(e *echo.Echo) {
 	// 全記事を取得
 	e.GET("/articles", handler.FindAllArticles())
 
-	// 記事を取得
+	// 記事を取得(トピック: 文字列区切り)
 	e.GET("/article/:article_id", handler.FindArticleByArticleId())
+
+	// 記事を取得(トピック: 数値区切り)
+	e.GET("/article/:article_id", handler.FindArticleByArticleId())
+
+	// 記事を取得(トピック: 文字列区切り)
+	// e.GET("/article/:article_id", handler.FindArticleByArticleId())
 
 	// 記事を更新
 	e.PUT("/article/:article_id", handler.UpdateArticleByArticleId())
@@ -41,7 +47,7 @@ func InitRouting(e *echo.Echo) {
 	// 記事を削除
 	e.DELETE("/article/:article_id", handler.DeleteArticleByArticleId())
 
-	// 特定のユーザの全記事を取得
+	// 特定のユーザの全記事を取得(トピック: 文字列区切り) :未実装
 	e.GET("/user/:user_id/articles", handler.FindArticlesByUserId())
 
 	// 特定のトピックを含む記事を取得
