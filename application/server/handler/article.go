@@ -52,8 +52,8 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 
 		// 記事トピックの末尾に,があったらそれを削除
 		articleTopics := willBeUpdatedArticle.ArticleTopics
-		if strings.LastIndex(articleTopics, ",") == len(articleTopics)-1 {
-			willBeUpdatedArticle.ArticleTopics = strings.TrimSuffix(articleTopics, ",")
+		if strings.LastIndex(articleTopics, "/") == len(articleTopics)-1 {
+			willBeUpdatedArticle.ArticleTopics = strings.TrimSuffix(articleTopics, "/")
 		}
 
 		// 記事トピックが更新されているか確認

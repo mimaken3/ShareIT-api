@@ -24,7 +24,7 @@ func (articleTopicRepo *articleTopicInfraStruct) CreateArticleTopic(article mode
 	topicsStr := article.ArticleTopics
 
 	// トピック名の配列
-	topicsArr := strings.Split(topicsStr, ",")
+	topicsArr := strings.Split(topicsStr, "/")
 
 	// トピックIDの配列
 	topicIDsArr := make([]uint, len(topicsArr))
