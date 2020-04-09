@@ -188,9 +188,43 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 			"updated_date":    customisedUpdateTime,
 		})
 
+	// 興味トピックを文字列で,区切りで取得
+	var articleTopicsStr string
+	err = articleRepo.db.Raw(`
+select 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id
+  ) as article_topics
+from 
+  articles as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      at.topic_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+  and a.article_id = ? 
+  and is_deleted = 0 
+group by 
+  a.article_id;
+			`, willBeUpdatedArticle.ArticleID).Row().Scan(&articleTopicsStr)
+
+	if err != nil {
+		return model.Article{}, err
+	}
+
+	updatedArticle.ArticleTopics = articleTopicsStr
+
 	// updateで値の入ってないフィールドに値を格納
 	updatedArticle.ArticleID = willBeUpdatedArticle.ArticleID
-	updatedArticle.ArticleTopics = willBeUpdatedArticle.ArticleTopics
 	updatedArticle.CreatedUserID = willBeUpdatedArticle.CreatedUserID
 	updatedArticle.CreatedDate = willBeUpdatedArticle.CreatedDate
 	updatedArticle.DeletedDate = willBeUpdatedArticle.DeletedDate
@@ -338,9 +372,39 @@ func (articleRepo *articleInfraStruct) CheckUpdateArticleTopic(willBeUpdatedArti
 	updateArticleId := willBeUpdatedArticle.ArticleID
 	topicsStr := willBeUpdatedArticle.ArticleTopics
 
-	articleRepo.db.Raw("select a.article_id, a.article_title, a.created_user_id, a.article_content, "+
-		"group_concat(att.topic_id order by att.article_topic_id) as article_topics, a.created_date, a.updated_date, a.deleted_date "+
-		"from articles as a, article_topics as att where a.article_id = att.article_id and a.article_id = ? and is_deleted = 0 group by a.article_id", updateArticleId).Scan(&article)
+	articleRepo.db.Raw(`
+select 
+  a.article_id, 
+  a.article_title, 
+  a.created_user_id, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id
+  ) as article_topics, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date 
+from 
+  articles as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      at.topic_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+  and a.article_id = ?
+  and is_deleted = 0 
+group by 
+  a.article_id;
+	`, updateArticleId).Scan(&article)
 
 	if article.ArticleTopics == topicsStr {
 		// 記事トピックが更新されていない場合

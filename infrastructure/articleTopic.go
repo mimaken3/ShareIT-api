@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -23,15 +22,25 @@ func (articleTopicRepo *articleTopicInfraStruct) CreateArticleTopic(article mode
 	articleTopic := model.ArticleTopic{}
 	articleID := article.ArticleID
 	topicsStr := article.ArticleTopics
+
+	// トピック名の配列
 	topicsArr := strings.Split(topicsStr, ",")
+
+	// トピックIDの配列
+	topicIDsArr := make([]uint, len(topicsArr))
+
+	for i, topicName := range topicsArr {
+		var topicID uint
+		articleTopicRepo.db.Table("topics").Where("topic_name = ?", topicName).Select("topic_id").Row().Scan(&topicID)
+		topicIDsArr[i] = topicID
+	}
 
 	// 記事トピックID
 	insertArticleTopicId := lastArticleTopicId
 
-	for _, topicStr := range topicsArr {
+	for _, topicID := range topicIDsArr {
 		insertArticleTopicId = insertArticleTopicId + 1
-		if topicStr != "" {
-			topicID, _ := strconv.Atoi(topicStr)
+		if topicID != 0 {
 			// INSERT INTO article_topics VALUES(:lastArticleTopicId + 1, :articleID, :topicID);
 			articleTopic.ArticleTopicID = insertArticleTopicId
 			articleTopic.ArticleID = articleID
