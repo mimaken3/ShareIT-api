@@ -48,6 +48,7 @@ select
     att.topic_name 
     order by 
       att.article_topic_id
+			 separator '/'
   ) as article_topics, 
   a.created_date, 
   a.updated_date, 
@@ -99,6 +100,7 @@ select
     att.topic_name 
     order by 
       att.article_topic_id
+			 separator '/'
   ) as article_topics, 
   a.created_date, 
   a.updated_date, 
@@ -196,6 +198,7 @@ select
     att.topic_name 
     order by 
       att.article_topic_id
+			 separator '/'
   ) as article_topics
 from 
   articles as a, 
@@ -245,6 +248,7 @@ select
     att.topic_name 
     order by 
       att.article_topic_id
+			 separator '/'
   ) as article_topics, 
   a.created_date, 
   a.updated_date, 
@@ -301,6 +305,7 @@ select
     att.topic_name 
     order by 
       att.article_topic_id
+			 separator '/'
   ) as article_topics, 
   a.created_date, 
   a.updated_date, 
@@ -382,6 +387,7 @@ select
     att.topic_name 
     order by 
       att.article_topic_id
+			 separator '/'
   ) as article_topics, 
   a.created_date, 
   a.updated_date, 
