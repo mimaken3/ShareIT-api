@@ -37,9 +37,39 @@ func (SignUpUser) TableName() string {
 
 // 全ユーザを取得
 func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) {
-	rows, err := userRepo.db.Raw("SELECT u.user_id, u.user_name, u.email, u.password, group_concat(ui.topic_id) " +
-		"as interested_topics, u.created_date, u.updated_date, u.deleted_date from users as u, " +
-		"user_interested_topics as ui where u.user_id = ui.user_id and u.is_deleted = 0 group by u.user_id").Rows()
+	rows, err := userRepo.db.Raw(`
+select 
+  u.user_id, 
+  u.user_name,
+  u.email,
+  u.password,
+  group_concat(
+    ut.topic_name  
+    order by 
+      ut.user_interested_topics_id
+      separator '/'
+  ) as interested_topics,
+  u.created_date,
+  u.updated_date,
+  u.deleted_date
+from 
+  users as u, 
+  (
+    select 
+      uit.user_interested_topics_id, 
+      uit.user_id, 
+      t.topic_name 
+    from 
+      user_interested_topics as uit 
+      left join topics as t on (t.topic_id = uit.topic_id)
+  ) as ut 
+where 
+  u.user_id = ut.user_id 
+  and u.is_deleted = 0
+group by 
+  u.user_id
+;
+	`).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
