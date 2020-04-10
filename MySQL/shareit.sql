@@ -52,8 +52,8 @@ CREATE TABLE article_topics(
 DROP TABLE IF EXISTS user_interested_topics;
 
 CREATE TABLE user_interested_topics(
-user_interested_topics_id INT UNSIGNED NOT NULL PRIMARY KEY,
-user_id INT UNSIGNED NOT NULL,
-topic_id INT UNSIGNED NOT NULL
+  user_interested_topics_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  topic_id INT UNSIGNED NOT NULL
 );
 
