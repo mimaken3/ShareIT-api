@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -30,13 +29,24 @@ func (uiRepo *userInterestedTopicInfraStruct) GetLastID() (lastID int, err error
 // 追加(複数ok)
 func (uiRepo *userInterestedTopicInfraStruct) CreateUserTopic(topicStr string, lastID int, userID uint) (err error) {
 	ui := model.UserInterestedTopic{}
-	topicsArr := strings.Split(topicStr, ",")
+	topicsArr := strings.Split(topicStr, "/")
+
+	var topicIDArr []uint
+	for _, topicName := range topicsArr {
+		var topicID uint
+
+		err := uiRepo.db.Table("topics").Where("topic_name = ?", topicName).Select("topic_id").Row().Scan(&topicID)
+
+		if err == nil {
+			topicIDArr = append(topicIDArr, topicID)
+		}
+	}
+
 	var insertID uint = uint(lastID)
 
-	for _, topicStr := range topicsArr {
+	for _, topicID := range topicIDArr {
 		insertID = insertID + 1
 		if topicStr != "" {
-			topicID, _ := strconv.Atoi(topicStr)
 			ui.UserInterestedTopicsID = insertID
 			ui.UserID = userID
 			ui.TopicID = uint(topicID)
