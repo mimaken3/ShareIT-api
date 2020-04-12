@@ -22,8 +22,8 @@ func NewArticleDB(db *gorm.DB) repository.ArticleRepository {
 type CreateArticle struct {
 	ArticleID      uint      `gorm:"primary_key" json:"article_id"`
 	ArticleTitle   string    `gorm:"size:255" json:"article_title"`
-	CreatedUserID  uint      `json:"created_user_id"`
 	ArticleContent string    `gorm:"size:1000" json:"article_content"`
+	CreatedUserID  uint      `json:"created_user_id"`
 	CreatedDate    time.Time `json:"created_date"`
 	UpdatedDate    time.Time `json:"updated_date"`
 	DeletedDate    time.Time `json:"deleted_date"`
@@ -42,7 +42,6 @@ func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Artic
 select 
   a.article_id, 
   a.article_title, 
-  a.created_user_id, 
   a.article_content, 
   group_concat(
     att.topic_name 
@@ -50,6 +49,7 @@ select
       att.article_topic_id
 			 separator '/'
   ) as article_topics, 
+  a.created_user_id, 
   a.created_date, 
   a.updated_date, 
   a.deleted_date 
@@ -94,7 +94,6 @@ func (articleRepo *articleInfraStruct) FindArticleByArticleId(articleId uint) (a
 select 
   a.article_id, 
   a.article_title, 
-  a.created_user_id, 
   a.article_content, 
   group_concat(
     att.topic_name 
@@ -102,6 +101,7 @@ select
       att.article_topic_id
 			 separator '/'
   ) as article_topics, 
+  a.created_user_id, 
   a.created_date, 
   a.updated_date, 
   a.deleted_date 
@@ -147,8 +147,8 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	// DBに保存する記事のモデルを作成
 	ar.ArticleID = lastArticleId + 1
 	ar.ArticleTitle = createArticle.ArticleTitle
-	ar.CreatedUserID = createArticle.CreatedUserID
 	ar.ArticleContent = createArticle.ArticleContent
+	ar.CreatedUserID = createArticle.CreatedUserID
 	ar.CreatedDate = customisedNowTime
 	ar.UpdatedDate = customisedNowTime
 	ar.DeletedDate = defaultDeletedDate
@@ -158,9 +158,9 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	// DBに保存した記事を返す
 	createdArticle.ArticleID = lastArticleId + 1
 	createdArticle.ArticleTitle = createArticle.ArticleTitle
-	createdArticle.CreatedUserID = createArticle.CreatedUserID
 	createdArticle.ArticleContent = createArticle.ArticleContent
 	createdArticle.ArticleTopics = createArticle.ArticleTopics
+	createdArticle.CreatedUserID = createArticle.CreatedUserID
 	createdArticle.CreatedDate = customisedNowTime
 	createdArticle.UpdatedDate = customisedNowTime
 	createdArticle.DeletedDate = defaultDeletedDate
@@ -242,7 +242,6 @@ func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint) (articl
 select 
   a.article_id, 
   a.article_title, 
-  a.created_user_id, 
   a.article_content, 
   group_concat(
     att.topic_name 
@@ -250,6 +249,7 @@ select
       att.article_topic_id
 			 separator '/'
   ) as article_topics, 
+  a.created_user_id, 
   a.created_date, 
   a.updated_date, 
   a.deleted_date 
@@ -299,7 +299,6 @@ func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.
 select 
   a.article_id, 
   a.article_title, 
-  a.created_user_id, 
   a.article_content, 
   group_concat(
     att.topic_name 
@@ -307,6 +306,7 @@ select
       att.article_topic_id
 			 separator '/'
   ) as article_topics, 
+  a.created_user_id, 
   a.created_date, 
   a.updated_date, 
   a.deleted_date 
@@ -381,7 +381,6 @@ func (articleRepo *articleInfraStruct) CheckUpdateArticleTopic(willBeUpdatedArti
 select 
   a.article_id, 
   a.article_title, 
-  a.created_user_id, 
   a.article_content, 
   group_concat(
     att.topic_name 
@@ -389,6 +388,7 @@ select
       att.article_topic_id
 			 separator '/'
   ) as article_topics, 
+  a.created_user_id, 
   a.created_date, 
   a.updated_date, 
   a.deleted_date 
