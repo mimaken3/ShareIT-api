@@ -23,6 +23,9 @@ func InitRouting(e *echo.Echo) {
 	// ユーザを登録
 	e.POST("/user/signUp", handler.SignUpUser())
 
+	// ユーザを更新
+	e.PUT("/user/:user_id", handler.UpdateUserByUserId())
+
 	// 最後のユーザIDを取得
 	e.GET("/user/lastUserId", handler.FindLastUserId())
 

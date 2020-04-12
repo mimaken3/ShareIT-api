@@ -194,6 +194,57 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 	return user, err
 }
 
+// 興味トピックが更新されているか確認
+func (userRepo *userInfraStruct) CheckUpdateInterestedTopic(willBeUpdatedUser model.User) (isUpdatedInterestedTopic bool, err error) {
+	user := model.User{}
+
+	result := userRepo.db.Raw(`
+select 
+  u.user_id, 
+  u.user_name,
+  u.email,
+  u.password,
+  group_concat(
+    ut.topic_name  
+    order by 
+      ut.user_interested_topics_id
+      separator '/'
+  ) as interested_topics,
+  u.created_date,
+  u.updated_date,
+  u.deleted_date
+from 
+  users as u, 
+  (
+    select 
+      uit.user_interested_topics_id, 
+      uit.user_id, 
+      t.topic_name 
+    from 
+      user_interested_topics as uit 
+      left join topics as t on (t.topic_id = uit.topic_id)
+  ) as ut 
+where 
+  u.user_id = ut.user_id 
+	and u.user_id = ?
+  and u.is_deleted = 0
+group by 
+  u.user_id;
+`, willBeUpdatedUser.UserID).Scan(&user)
+
+	if result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+	}
+
+	if willBeUpdatedUser.InterestedTopics == user.InterestedTopics {
+		// 興味トピックが更新されていない場合
+		return false, nil
+	}
+	// 興味トピックが更新されていた場合
+	return true, nil
+}
+
 // パスワードをハッシュ化
 func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword string, err error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

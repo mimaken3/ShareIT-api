@@ -1,5 +1,7 @@
 package repository
 
+import "github.com/mimaken3/ShareIT-api/domain/model"
+
 // UserInterestedTopicRepository is interface for infrastructure
 type UserInterestedTopicRepository interface {
 	// 最後のIDを取得
@@ -8,11 +10,8 @@ type UserInterestedTopicRepository interface {
 	// 追加
 	CreateUserTopic(topicStr string, lastID int, userID uint) (err error)
 
-	// 更新
-	// UpdateUserTopic(topicArr []int) (err error)
-
-	// 削除
-	// DeleteUserTopic(topicArr []int) (err error)
+	// ユーザIDに紐づくトピックを削除
+	DeleteUserInterestedTopic(willBeUpdatedUser model.User) (err error)
 
 	// 削除(トピックが削除されたら)
 	DeleteUserTopicByTopicID(topicID int) (err error)

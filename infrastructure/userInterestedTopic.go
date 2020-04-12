@@ -20,7 +20,10 @@ func NewUserInterestedTopicDB(db *gorm.DB) repository.UserInterestedTopicReposit
 // 最後のIDを取得
 func (uiRepo *userInterestedTopicInfraStruct) GetLastID() (lastID int, err error) {
 	ui := model.UserInterestedTopic{}
-	uiRepo.db.Select("user_interested_topics_id").Last(&ui)
+	if result := uiRepo.db.Select("user_interested_topics_id").Last(&ui); result.Error != nil {
+		return 0, result.Error
+	}
+
 	lastID = int(ui.UserInterestedTopicsID)
 
 	return
@@ -56,11 +59,15 @@ func (uiRepo *userInterestedTopicInfraStruct) CreateUserTopic(topicStr string, l
 	return
 }
 
-// 更新
-// UpdateUserTopic(topicArr []int) (err error)
+// ユーザIDに紐づくトピックを削除
+func (uiRepo *userInterestedTopicInfraStruct) DeleteUserInterestedTopic(willBeUpdatedUser model.User) (err error) {
+	uintUserID := willBeUpdatedUser.UserID
 
-// 削除
-// DeleteUserTopic(topicArr []int) (err error)
+	// 物理削除
+	uiRepo.db.Where("user_id = ?", uintUserID).Delete(&model.UserInterestedTopic{})
+
+	return
+}
 
 // 削除(トピックが削除されたら)
 func (uiRepo *userInterestedTopicInfraStruct) DeleteUserTopicByTopicID(topicID int) (err error) {

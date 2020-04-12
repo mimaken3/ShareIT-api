@@ -50,7 +50,15 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 			return err
 		}
 
-		// 記事トピックの末尾に,があったらそれを削除
+		// 記事IDを取得
+		articleID, _ := strconv.Atoi(c.Param("article_id"))
+
+		// パラメータのIDと受け取ったモデルのIDが違う場合、エラーを返す
+		if uint(articleID) != willBeUpdatedArticle.ArticleID {
+			return c.String(http.StatusBadRequest, "param article_id and send article id are different")
+		}
+
+		// 記事トピックの末尾に/があったらそれを削除
 		articleTopics := willBeUpdatedArticle.ArticleTopics
 		if strings.LastIndex(articleTopics, "/") == len(articleTopics)-1 {
 			willBeUpdatedArticle.ArticleTopics = strings.TrimSuffix(articleTopics, "/")

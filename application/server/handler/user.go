@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/mimaken3/ShareIT-api/domain/model"
@@ -66,6 +67,51 @@ func SignUpUser() echo.HandlerFunc {
 		userInterestedTopicService.CreateUserTopic(signUpedUser.InterestedTopics, signUpedUser.UserID)
 
 		return c.JSON(http.StatusOK, signUpedUser)
+	}
+}
+
+// ユーザを更新
+func UpdateUserByUserId() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		willBeUpdatedUser := model.User{}
+
+		if err := c.Bind(&willBeUpdatedUser); err != nil {
+			return err
+		}
+
+		// ユーザIDを取得
+		userID, _ := strconv.Atoi(c.Param("user_id"))
+
+		// パラメータのIDと受け取ったモデルのIDが違う場合、エラーを返す
+		if uint(userID) != willBeUpdatedUser.UserID {
+			return c.String(http.StatusBadRequest, "param userID and send user id are different")
+		}
+
+		// 興味トピックの末尾に/があったらそれを削除
+		interestedTopics := willBeUpdatedUser.InterestedTopics
+		if strings.LastIndex(interestedTopics, "/") == len(interestedTopics)-1 {
+			willBeUpdatedUser.InterestedTopics = strings.TrimSuffix(interestedTopics, "/")
+		}
+
+		// 興味トピックが更新されているか確認
+		isUpdatedInterestedTopic, err := userService.CheckUpdateInterestedTopic(willBeUpdatedUser)
+
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
+		if isUpdatedInterestedTopic {
+			// 興味トピックを更新
+			err = userInterestedTopicService.UpdateUserInterestedTopic(willBeUpdatedUser)
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, err.Error())
+			}
+		}
+
+		// TODO: 更新日を更新（興味トピック以外を更新する際にやる）
+
+		return c.JSON(http.StatusOK, willBeUpdatedUser)
+
 	}
 }
 

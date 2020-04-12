@@ -16,6 +16,9 @@ type UserRepository interface {
 	// ユーザを登録
 	SignUpUser(user model.User, lastUserId uint) (signedUpUser model.User, err error)
 
+	// 興味トピックが更新されているか確認
+	CheckUpdateInterestedTopic(willBeUpdatedUser model.User) (isUpdatedInterestedTopic bool, err error)
+
 	// パスワードをハッシュ化
 	PasswordToHash(password string) (hashedPassword string, err error)
 

@@ -23,6 +23,9 @@ type UserServiceInterface interface {
 	// ユーザを登録
 	SignUpUser(user model.User) (signedUpUser model.User, err error)
 
+	// 興味トピックが更新されているか確認
+	CheckUpdateInterestedTopic(willBeUpdatedUser model.User) (isUpdatedInterestedTopic bool, err error)
+
 	// 最後のユーザIDを取得
 	FindLastUserId() (lastUserId uint, err error)
 
