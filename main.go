@@ -5,12 +5,15 @@ import (
 	"os"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/mimaken3/ShareIT-api/application/server"
 	"google.golang.org/appengine"
 )
 
 func main() {
 	e := echo.New()
+
+	e.Use(middleware.CORS())
 
 	server.InitRouting(e)
 
