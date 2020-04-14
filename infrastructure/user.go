@@ -117,10 +117,49 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 
 // ログイン
 func (userRepo *userInfraStruct) Login(user model.User) (message string, resultUser model.User, err error) {
-	if result := userRepo.db.Where("user_name = ?", user.UserName).Find(&resultUser); result.Error != nil {
+	result := userRepo.db.Raw(`
+select 
+  u.user_id,
+  u.user_name,
+  u.email,
+  u.password,
+  dd.interested_topics,
+  u.created_date,
+  u.updated_date,
+  u.deleted_date 
+from 
+  users as u 
+  inner join (
+    select 
+      td.user_id, 
+      group_concat(
+        td.topic_name 
+        order by 
+          td.user_interested_topics_id separator "/"
+      ) as interested_topics
+    from 
+      (
+        select 
+          uit.user_interested_topics_id, 
+          uit.user_id, 
+          t.topic_id, 
+          t.topic_name 
+        from 
+          user_interested_topics as uit 
+          inner join topics as t on (uit.topic_id = t.topic_id)
+      ) as td 
+    group by 
+      td.user_id
+  ) as dd on (dd.user_id = u.user_id)
+  where 
+  u.user_name = ? 
+	`, user.UserName).Scan(&resultUser)
+
+	if result.Error != nil {
 		// レコードがない場合
 		return "failed", model.User{}, result.Error
 	}
+
 	err = bcrypt.CompareHashAndPassword([]byte(resultUser.Password), []byte(user.Password))
 
 	if err != nil {
