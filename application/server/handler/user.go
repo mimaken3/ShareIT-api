@@ -5,9 +5,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/mimaken3/ShareIT-api/domain/model"
 )
+
+type APIResult struct {
+	Code    int        `json:"code"`
+	Message string     `json:"message"`
+	User    model.User `json:"user"`
+}
 
 // 全ユーザを取得
 func FindAllUsers() echo.HandlerFunc {
@@ -67,6 +73,44 @@ func SignUpUser() echo.HandlerFunc {
 		userInterestedTopicService.CreateUserTopic(signUpedUser.InterestedTopics, signUpedUser.UserID)
 
 		return c.JSON(http.StatusOK, signUpedUser)
+	}
+}
+
+// ログイン
+func Login() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user := model.User{}
+
+		// sess, _ := session.Get("session", c)
+		// sess.Options = &sessions.Options{
+		// 	//Path:でsessionの有効な範囲を指定｡指定無しで全て有効になる｡
+		// 	//有効な時間
+		// 	MaxAge: 86400 * 7,
+		// 	//trueでjsからのアクセス拒否
+		// 	HttpOnly: true,
+		// }
+
+		if err := c.Bind(&user); err != nil {
+			return err
+		}
+
+		message, resultUser, _ := userService.Login(user)
+		// TODO: err を使用
+
+		var api APIResult
+		if message == "success" {
+			// 成功
+			api.Code = 200
+			api.Message = message
+			api.User = resultUser
+			return c.JSON(http.StatusOK, api)
+		}
+		// 失敗
+		api.Code = 500
+		api.Message = message
+		api.User = resultUser
+
+		return c.JSON(http.StatusBadRequest, api)
 	}
 }
 

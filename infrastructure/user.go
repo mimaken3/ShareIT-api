@@ -115,6 +115,24 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 	return
 }
 
+// ログイン
+func (userRepo *userInfraStruct) Login(user model.User) (message string, resultUser model.User, err error) {
+	if result := userRepo.db.Where("user_name = ?", user.UserName).Find(&resultUser); result.Error != nil {
+		// レコードがない場合
+		return "failed", model.User{}, result.Error
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(resultUser.Password), []byte(user.Password))
+
+	if err != nil {
+		// パスワードが一致しなかった場合
+		return "fail", user, err
+	}
+
+	// パスワードが一致した場合
+	resultUser.Password = ""
+	return "success", resultUser, nil
+}
+
 // ユーザを取得
 func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, err error) {
 	result := userRepo.db.Raw(`
@@ -255,11 +273,17 @@ func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword
 	return
 }
 
-// パスワードが一致するかのチェック
-func (userRepo *userInfraStruct) VerifyPassword(user model.User) (loginUser model.User, err error) {
-	// https://mossa.dev/post/go_password-hash/
-	return
-}
+// // パスワードが一致するかのチェック
+// func (userRepo *userInfraStruct) VerifyPassword(user model.User) (loginUser model.User, err error) {
+// 	dbUser := model.User{}
+//
+// 	if result := userRepo.db.Select("password").Where("user_name = ?", loginUser.UserName).Find(&dbUser); result.Error != nil {
+// 		// レコードがない場合
+// 		return model.User{}, result.Error
+// 	}
+// 	result := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(loginUser.Password))
+// 	return result, err
+// }
 
 // 最後のユーザIDを取得
 func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {

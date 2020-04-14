@@ -3,7 +3,7 @@ package server
 import (
 	"log"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/mimaken3/ShareIT-api/application/server/handler"
 )
 
@@ -21,7 +21,10 @@ func InitRouting(e *echo.Echo) {
 	e.GET("/user/:user_id", handler.FindUserByUserId())
 
 	// ユーザを登録
-	e.POST("/user/signUp", handler.SignUpUser())
+	e.POST("/signUp", handler.SignUpUser())
+
+	// ログイン
+	e.POST("/login", handler.Login())
 
 	// ユーザを更新
 	e.PUT("/user/:user_id", handler.UpdateUserByUserId())
