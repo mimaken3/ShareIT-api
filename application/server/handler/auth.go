@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"os"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -11,7 +13,9 @@ type jwtCustomClaims struct {
 	jwt.StandardClaims
 }
 
-var signingKey = []byte("secret")
+var signingKey = []byte(os.Getenv("SECRET_KEY"))
+
+var a = os.Getenv("SECRET_KEY")
 
 var Config = middleware.JWTConfig{
 	Claims:     &jwtCustomClaims{},

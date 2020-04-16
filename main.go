@@ -19,7 +19,7 @@ func main() {
 
 	e.Use(middleware.CORS())
 
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte(os.Getenv("SECRET_KEY")))))
 
 	server.InitRouting(e)
 
