@@ -120,6 +120,7 @@ func Login() echo.HandlerFunc {
 			return c.JSON(http.StatusOK, api)
 		}
 		// 失敗
+		api.Token = ""
 		api.Code = 500
 		api.Message = message
 		api.User = resultUser
