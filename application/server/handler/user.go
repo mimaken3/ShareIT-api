@@ -4,12 +4,15 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/mimaken3/ShareIT-api/domain/model"
 )
 
 type APIResult struct {
+	Token   string     `json:"token"`
 	Code    int        `json:"code"`
 	Message string     `json:"message"`
 	User    model.User `json:"user"`
@@ -81,15 +84,6 @@ func Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := model.User{}
 
-		// sess, _ := session.Get("session", c)
-		// sess.Options = &sessions.Options{
-		// 	//Path:でsessionの有効な範囲を指定｡指定無しで全て有効になる｡
-		// 	//有効な時間
-		// 	MaxAge: 86400 * 7,
-		// 	//trueでjsからのアクセス拒否
-		// 	HttpOnly: true,
-		// }
-
 		if err := c.Bind(&user); err != nil {
 			return err
 		}
@@ -100,9 +94,29 @@ func Login() echo.HandlerFunc {
 		var api APIResult
 		if message == "success" {
 			// 成功
+
+			// Set claims
+			claims := &jwtCustomClaims{
+				resultUser.UserID,
+				resultUser.UserName,
+				jwt.StandardClaims{
+					ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+				},
+			}
+
+			// tokenを作成
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+			t, err := token.SignedString(signingKey)
+
+			if err != nil {
+				return err
+			}
+
+			api.Token = t
 			api.Code = 200
 			api.Message = message
 			api.User = resultUser
+
 			return c.JSON(http.StatusOK, api)
 		}
 		// 失敗

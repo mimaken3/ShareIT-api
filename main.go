@@ -4,7 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
+
 	"github.com/labstack/echo/v4"
+
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mimaken3/ShareIT-api/application/server"
 	"google.golang.org/appengine"
@@ -15,11 +19,7 @@ func main() {
 
 	e.Use(middleware.CORS())
 
-	// セッションを設定
-	// store := session.NewCookieStore([]byte("secret-key"))
-
-	// セッション保持時間(10分)
-	// store.MaxAge(60 * 10)
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
 
 	server.InitRouting(e)
 
