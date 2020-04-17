@@ -20,6 +20,9 @@ func InitRouting(e *echo.Echo) {
 	// ログイン
 	e.POST("/login", handler.Login())
 
+	// 全トピックを取得
+	e.GET("/topics", handler.FindAllTopics())
+
 	// =========
 	// || API ||
 	// =========
@@ -84,9 +87,6 @@ func InitRouting(e *echo.Echo) {
 
 	// トピックを作成
 	topicG.POST("/create", handler.CreateTopic())
-
-	// 全トピックを取得
-	topicG.GET("", handler.FindAllTopics())
 
 	// トピックを削除
 	topicG.DELETE("/:topic_id", handler.DeleteTopicByTopicID())
