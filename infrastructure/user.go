@@ -164,6 +164,7 @@ from
 
 	if err != nil {
 		// パスワードが一致しなかった場合
+		user.Password = ""
 		return "fail", user, err
 	}
 
