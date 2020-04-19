@@ -5,9 +5,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/mimaken3/ShareIT-api/domain/model"
 )
+
+type ArticlesResult struct {
+	RefPg        int             `json:"ref_pg"`
+	AllPagingNum int             `json:"all_paging_num"`
+	Articles     []model.Article `json:"articles"`
+}
 
 // テストレスポンスを返す
 func TestResponse() echo.HandlerFunc {
@@ -16,14 +22,27 @@ func TestResponse() echo.HandlerFunc {
 	}
 }
 
-// 全記事を取得
+// 全記事を取得(ページング)
 func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		articles, err := articleService.FindAllArticlesService()
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		if refPg == 0 {
+			refPg = 1
+		}
+
+		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())
 		}
-		return c.JSON(http.StatusOK, articles)
+
+		var articlesResult ArticlesResult
+		articlesResult.RefPg = refPg
+		articlesResult.AllPagingNum = allPagingNum
+		articlesResult.Articles = articles
+
+		return c.JSON(http.StatusOK, articlesResult)
 	}
 }
 
@@ -50,7 +69,15 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 			return err
 		}
 
-		// 記事トピックの末尾に,があったらそれを削除
+		// 記事IDを取得
+		articleID, _ := strconv.Atoi(c.Param("article_id"))
+
+		// パラメータのIDと受け取ったモデルのIDが違う場合、エラーを返す
+		if uint(articleID) != willBeUpdatedArticle.ArticleID {
+			return c.String(http.StatusBadRequest, "param article_id and send article id are different")
+		}
+
+		// 記事トピックの末尾に/があったらそれを削除
 		articleTopics := willBeUpdatedArticle.ArticleTopics
 		if strings.LastIndex(articleTopics, "/") == len(articleTopics)-1 {
 			willBeUpdatedArticle.ArticleTopics = strings.TrimSuffix(articleTopics, "/")

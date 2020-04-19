@@ -115,6 +115,64 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 	return
 }
 
+// ログイン
+func (userRepo *userInfraStruct) Login(user model.User) (message string, resultUser model.User, err error) {
+	result := userRepo.db.Raw(`
+select 
+  u.user_id,
+  u.user_name,
+  u.email,
+  u.password,
+  dd.interested_topics,
+  u.created_date,
+  u.updated_date,
+  u.deleted_date 
+from 
+  users as u 
+  inner join (
+    select 
+      td.user_id, 
+      group_concat(
+        td.topic_name 
+        order by 
+          td.user_interested_topics_id separator "/"
+      ) as interested_topics
+    from 
+      (
+        select 
+          uit.user_interested_topics_id, 
+          uit.user_id, 
+          t.topic_id, 
+          t.topic_name 
+        from 
+          user_interested_topics as uit 
+          inner join topics as t on (uit.topic_id = t.topic_id)
+      ) as td 
+    group by 
+      td.user_id
+  ) as dd on (dd.user_id = u.user_id)
+  where 
+  u.user_name = ? 
+	`, user.UserName).Scan(&resultUser)
+
+	if result.Error != nil {
+		// レコードがない場合
+		return "failed", model.User{}, result.Error
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(resultUser.Password), []byte(user.Password))
+
+	if err != nil {
+		// パスワードが一致しなかった場合
+		user.Password = ""
+		return "fail", user, err
+	}
+
+	// パスワードが一致した場合
+	resultUser.Password = ""
+	return "success", resultUser, nil
+}
+
 // ユーザを取得
 func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, err error) {
 	result := userRepo.db.Raw(`
@@ -194,6 +252,57 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 	return user, err
 }
 
+// 興味トピックが更新されているか確認
+func (userRepo *userInfraStruct) CheckUpdateInterestedTopic(willBeUpdatedUser model.User) (isUpdatedInterestedTopic bool, err error) {
+	user := model.User{}
+
+	result := userRepo.db.Raw(`
+select 
+  u.user_id, 
+  u.user_name,
+  u.email,
+  u.password,
+  group_concat(
+    ut.topic_name  
+    order by 
+      ut.user_interested_topics_id
+      separator '/'
+  ) as interested_topics,
+  u.created_date,
+  u.updated_date,
+  u.deleted_date
+from 
+  users as u, 
+  (
+    select 
+      uit.user_interested_topics_id, 
+      uit.user_id, 
+      t.topic_name 
+    from 
+      user_interested_topics as uit 
+      left join topics as t on (t.topic_id = uit.topic_id)
+  ) as ut 
+where 
+  u.user_id = ut.user_id 
+	and u.user_id = ?
+  and u.is_deleted = 0
+group by 
+  u.user_id;
+`, willBeUpdatedUser.UserID).Scan(&user)
+
+	if result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+	}
+
+	if willBeUpdatedUser.InterestedTopics == user.InterestedTopics {
+		// 興味トピックが更新されていない場合
+		return false, nil
+	}
+	// 興味トピックが更新されていた場合
+	return true, nil
+}
+
 // パスワードをハッシュ化
 func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword string, err error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -204,11 +313,17 @@ func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword
 	return
 }
 
-// パスワードが一致するかのチェック
-func (userRepo *userInfraStruct) VerifyPassword(user model.User) (loginUser model.User, err error) {
-	// https://mossa.dev/post/go_password-hash/
-	return
-}
+// // パスワードが一致するかのチェック
+// func (userRepo *userInfraStruct) VerifyPassword(user model.User) (loginUser model.User, err error) {
+// 	dbUser := model.User{}
+//
+// 	if result := userRepo.db.Select("password").Where("user_name = ?", loginUser.UserName).Find(&dbUser); result.Error != nil {
+// 		// レコードがない場合
+// 		return model.User{}, result.Error
+// 	}
+// 	result := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(loginUser.Password))
+// 	return result, err
+// }
 
 // 最後のユーザIDを取得
 func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {

@@ -10,8 +10,8 @@ type ArticleRepository interface {
 	// 記事を取得
 	FindArticleByArticleId(articleId uint) (article model.Article, err error)
 
-	// 記事を全取得
-	FindAllArticles() (articles []model.Article, err error)
+	// 全記事を取得(ページング)
+	FindAllArticles(refPg int) (articles []model.Article, allPagingNum int, err error)
 
 	// 記事を更新
 	UpdateArticleByArticleId(willBeUpdatedArticle model.Article) (updatedArticle model.Article, err error)

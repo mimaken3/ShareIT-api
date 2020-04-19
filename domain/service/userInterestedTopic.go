@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/mimaken3/ShareIT-api/domain/model"
 	"github.com/mimaken3/ShareIT-api/domain/repository"
 )
 
@@ -13,11 +14,11 @@ type UserInterestedTopicServiceInterface interface {
 	// 追加
 	CreateUserTopic(topicStr string, userID uint) (err error)
 
-	// 更新
-	// UpdateUserTopic(topicArr []int) (err error)
+	// ユーザIDに紐づくトピックを更新
+	UpdateUserInterestedTopic(willBeUpdatedUser model.User) (err error)
 
-	// 削除
-	// DeleteUserTopic(topicArr []int) (err error)
+	// ユーザIDに紐づくトピックを削除
+	// DeleteUserTopic(willBeUpdatedUser model.User) (err error)
 
 	// 削除(トピックが削除されたら)
 	DeleteUserTopicByTopicID(topicID int) (err error)

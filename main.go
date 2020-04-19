@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
+
+	"github.com/labstack/echo/v4"
+
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/mimaken3/ShareIT-api/application/server"
 	"google.golang.org/appengine"
 )
@@ -14,6 +18,8 @@ func main() {
 	e := echo.New()
 
 	e.Use(middleware.CORS())
+
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte(os.Getenv("SECRET_KEY")))))
 
 	server.InitRouting(e)
 
