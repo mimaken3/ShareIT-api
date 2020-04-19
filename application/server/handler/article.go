@@ -9,6 +9,12 @@ import (
 	"github.com/mimaken3/ShareIT-api/domain/model"
 )
 
+type ArticlesResult struct {
+	RefPg        int             `json:"ref_pg"`
+	AllPagingNum int             `json:"all_paging_num"`
+	Articles     []model.Article `json:"articles"`
+}
+
 // テストレスポンスを返す
 func TestResponse() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -16,14 +22,27 @@ func TestResponse() echo.HandlerFunc {
 	}
 }
 
-// 全記事を取得
+// 全記事を取得(ページング)
 func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		articles, err := articleService.FindAllArticlesService()
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		if refPg == 0 {
+			refPg = 1
+		}
+
+		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())
 		}
-		return c.JSON(http.StatusOK, articles)
+
+		var articlesResult ArticlesResult
+		articlesResult.RefPg = refPg
+		articlesResult.AllPagingNum = allPagingNum
+		articlesResult.Articles = articles
+
+		return c.JSON(http.StatusOK, articlesResult)
 	}
 }
 

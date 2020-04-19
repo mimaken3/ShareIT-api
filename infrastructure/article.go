@@ -34,11 +34,13 @@ func (CreateArticle) TableName() string {
 	return "articles"
 }
 
-// 全記事を取得
-func (articleRepo *articleInfraStruct) FindAllArticles() (articles []model.Article, err error) {
+// 全記事を取得(ページング)
+func (articleRepo *articleInfraStruct) FindAllArticles(refPg int) (articles []model.Article, allPagingNum int, err error) {
+	offset := (refPg - 1) * 10
 	rows, err :=
 		articleRepo.db.Raw(
 			`
+			select * from(
 select 
   a.article_id, 
   a.article_title, 
@@ -68,8 +70,11 @@ where
   a.article_id = att.article_id 
   and is_deleted = 0 
 group by 
-  a.article_id;
-`).Rows()
+  a.article_id
+  ) as tt
+  limit 10 offset ? 
+  ;
+`, offset).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
@@ -82,8 +87,12 @@ group by
 
 	// レコードがない場合
 	if len(articles) == 0 {
-		return nil, errors.New("record not found")
+		return nil, 0, errors.New("record not found")
 	}
+
+	var count int
+	articleRepo.db.Table("articles").Where("is_deleted = 0").Count(&count)
+	allPagingNum = (count / 10) + 1
 
 	return
 }

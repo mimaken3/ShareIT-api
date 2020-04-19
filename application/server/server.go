@@ -59,7 +59,7 @@ func InitRouting(e *echo.Echo) {
 	// ==========
 	articleG := apiG.Group("/articles")
 
-	// 全記事を取得(トピック: 文字列区切り)
+	// 全記事を取得(ページング)(トピック: 文字列区切り)
 	articleG.GET("", handler.FindAllArticles())
 
 	// 記事を取得(トピック: 数値区切り)
