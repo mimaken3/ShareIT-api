@@ -119,16 +119,18 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 func (userRepo *userInfraStruct) Login(user model.User) (message string, resultUser model.User, err error) {
 	result := userRepo.db.Raw(`
 select 
-  u.user_id,
-  u.user_name,
-  u.email,
-  u.password,
-  dd.interested_topics,
-  u.created_date,
-  u.updated_date,
+  u.user_id, 
+  u.user_name, 
+  u.email, 
+  u.password, 
+  p.content as profile, 
+  dd.interested_topics, 
+  u.created_date, 
+  u.updated_date, 
   u.deleted_date 
 from 
   users as u 
+  inner join profiles as p on (u.user_id = p.user_id) 
   inner join (
     select 
       td.user_id, 
@@ -136,7 +138,7 @@ from
         td.topic_name 
         order by 
           td.user_interested_topics_id separator "/"
-      ) as interested_topics
+      ) as interested_topics 
     from 
       (
         select 
@@ -150,8 +152,8 @@ from
       ) as td 
     group by 
       td.user_id
-  ) as dd on (dd.user_id = u.user_id)
-  where 
+  ) as dd on (dd.user_id = u.user_id) 
+where 
   u.user_name = ? 
 	`, user.UserName).Scan(&resultUser)
 
