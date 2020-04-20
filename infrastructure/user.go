@@ -130,7 +130,7 @@ select
   u.deleted_date 
 from 
   users as u 
-  inner join profiles as p on (u.user_id = p.user_id) 
+  left join profiles as p on (u.user_id = p.user_id) 
   inner join (
     select 
       td.user_id, 
@@ -180,35 +180,41 @@ func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, 
 	result := userRepo.db.Raw(`
 select 
   u.user_id, 
-  u.user_name,
-  u.email,
-  u.password,
-  group_concat(
-    ut.topic_name  
-    order by 
-      ut.user_interested_topics_id
-      separator '/'
-  ) as interested_topics,
-  u.created_date,
-  u.updated_date,
-  u.deleted_date
+  u.user_name, 
+  u.email, 
+  u.password, 
+  p.content as profile, 
+  dd.interested_topics, 
+  u.created_date, 
+  u.updated_date, 
+  u.deleted_date 
 from 
-  users as u, 
-  (
+  users as u 
+  left join profiles as p on (u.user_id = p.user_id) 
+  inner join (
     select 
-      uit.user_interested_topics_id, 
-      uit.user_id, 
-      t.topic_name 
+      td.user_id, 
+      group_concat(
+        td.topic_name 
+        order by 
+          td.user_interested_topics_id separator "/"
+      ) as interested_topics 
     from 
-      user_interested_topics as uit 
-      left join topics as t on (t.topic_id = uit.topic_id)
-  ) as ut 
+      (
+        select 
+          uit.user_interested_topics_id, 
+          uit.user_id, 
+          t.topic_id, 
+          t.topic_name 
+        from 
+          user_interested_topics as uit 
+          inner join topics as t on (uit.topic_id = t.topic_id)
+      ) as td 
+    group by 
+      td.user_id
+  ) as dd on (dd.user_id = u.user_id) 
 where 
-  u.user_id = ut.user_id 
-	and u.user_id = ?
-  and u.is_deleted = 0
-group by 
-  u.user_id;
+  u.user_id = ?;
 `, userId).Scan(&user)
 
 	if result.Error != nil {
