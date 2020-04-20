@@ -358,7 +358,7 @@ func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword
 func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 	user := model.User{}
 	// SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1; と同義
-	if result := userRepo.db.Select("user_id").Where("is_deleted = ?", 0).Last(&user); result.Error != nil {
+	if result := userRepo.db.Select("user_id").Last(&user); result.Error != nil {
 		// レコードがない場合
 		return 0, nil
 	}
