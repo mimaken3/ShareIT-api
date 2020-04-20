@@ -75,6 +75,9 @@ func SignUpUser() echo.HandlerFunc {
 		// トピックを登録
 		userInterestedTopicService.CreateUserTopic(signUpedUser.InterestedTopics, signUpedUser.UserID)
 
+		// プロフィールを登録
+		err = profileService.CreateProfileByUserID(user.Profile, signUpedUser.UserID)
+
 		return c.JSON(http.StatusOK, signUpedUser)
 	}
 }

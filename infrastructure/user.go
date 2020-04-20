@@ -331,7 +331,7 @@ func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 	// SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1; と同義
 	if result := userRepo.db.Select("user_id").Where("is_deleted = ?", 0).Last(&user); result.Error != nil {
 		// レコードがない場合
-		err = result.Error
+		return 0, nil
 	}
 	lastUserId = user.UserID
 

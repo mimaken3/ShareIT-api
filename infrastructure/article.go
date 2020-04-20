@@ -372,8 +372,7 @@ func (articleRepo *articleInfraStruct) FindLastArticleId() (lastArticleId uint, 
 	// SELECT article_id FROM articles WHERE is_deleted = 0 ORDER BY article_id DESC LIMIT 1;
 	if result := articleRepo.db.Select("article_id").Last(&article); result.Error != nil {
 		// レコードがない場合
-		err = result.Error
-		return
+		return 0, nil
 	}
 
 	lastArticleId = article.ArticleID
