@@ -170,9 +170,13 @@ func UpdateUserByUserId() echo.HandlerFunc {
 			}
 		}
 
-		// TODO: 更新日を更新（興味トピック以外を更新する際にやる）
+		// プロフィールを更新
+		profileService.UpdateProfileByUserID(willBeUpdatedUser.Profile, willBeUpdatedUser.UserID)
 
-		return c.JSON(http.StatusOK, willBeUpdatedUser)
+		// 更新日を更新
+		updatedUser, err := userService.UpdateUser(willBeUpdatedUser.UserID)
+
+		return c.JSON(http.StatusOK, updatedUser)
 
 	}
 }

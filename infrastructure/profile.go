@@ -38,3 +38,14 @@ func (pRepo *profileInfraStruct) CreateProfileByUserID(lastID uint, content stri
 
 	return
 }
+
+// 更新
+func (pRepo *profileInfraStruct) UpdateProfileByUserID(content string, userID uint) (err error) {
+	p := model.Profile{}
+	pRepo.db.Model(&p).Where("user_id = ?", userID).Update("content", content)
+
+	return
+}
+
+// 削除
+// DeleteProfileByUSerID(userID uint)(err error)

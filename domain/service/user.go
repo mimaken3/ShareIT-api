@@ -34,6 +34,9 @@ type UserServiceInterface interface {
 
 	// ユーザのinterested_topicsにあるトピックを削除
 	DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error)
+
+	// 更新日を更新
+	UpdateUser(userID uint) (updatedUser model.User, err error)
 }
 
 // DIのための関数

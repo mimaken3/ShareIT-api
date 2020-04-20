@@ -329,18 +329,6 @@ func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword
 	return
 }
 
-// // パスワードが一致するかのチェック
-// func (userRepo *userInfraStruct) VerifyPassword(user model.User) (loginUser model.User, err error) {
-// 	dbUser := model.User{}
-//
-// 	if result := userRepo.db.Select("password").Where("user_name = ?", loginUser.UserName).Find(&dbUser); result.Error != nil {
-// 		// レコードがない場合
-// 		return model.User{}, result.Error
-// 	}
-// 	result := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(loginUser.Password))
-// 	return result, err
-// }
-
 // 最後のユーザIDを取得
 func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 	user := model.User{}
@@ -356,5 +344,19 @@ func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 
 // ユーザのinterested_topicsにあるトピックを削除
 func (userRepo *userInfraStruct) DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error) {
+	return
+}
+
+// 更新日を更新
+func (userRepo *userInfraStruct) UpdateUser(userID uint) (err error) {
+	user := model.User{}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	nowTime := time.Now().Format(dateFormat)
+	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
+
+	userRepo.db.Model(&user).Where("user_id = ?", userID).Update("updated_date", customisedNowTime)
+
 	return
 }

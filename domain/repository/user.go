@@ -33,4 +33,7 @@ type UserRepository interface {
 
 	// ユーザのinterested_topicsにあるトピックを削除
 	DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error)
+
+	// 更新日を更新
+	UpdateUser(userID uint) (err error)
 }

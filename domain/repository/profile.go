@@ -7,4 +7,10 @@ type ProfileRepository interface {
 
 	// 登録
 	CreateProfileByUserID(lastID uint, content string, userID uint) (err error)
+
+	// 更新
+	UpdateProfileByUserID(content string, userID uint) (err error)
+
+	// 削除
+	// DeleteProfileByUSerID(userID uint)(err error)
 }
