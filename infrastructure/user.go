@@ -39,6 +39,11 @@ func (SignUpUser) TableName() string {
 func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) {
 	rows, err := userRepo.db.Raw(`
 select 
+  ddd.*,
+  p.content as profile 
+from 
+  (
+select 
   u.user_id, 
   u.user_name,
   u.email,
@@ -53,7 +58,8 @@ select
   u.updated_date,
   u.deleted_date
 from 
-  users as u, 
+  users as u
+    , 
   (
     select 
       uit.user_interested_topics_id, 
@@ -62,13 +68,15 @@ from
     from 
       user_interested_topics as uit 
       left join topics as t on (t.topic_id = uit.topic_id)
-  ) as ut 
+  ) as ut   
 where 
   u.user_id = ut.user_id 
   and u.is_deleted = 0
 group by 
   u.user_id
-;
+) as ddd
+left join profiles as p on (ddd.user_id = p.user_id) 
+order by ddd.user_id;
 	`).Rows()
 
 	defer rows.Close()
