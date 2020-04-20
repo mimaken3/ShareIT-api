@@ -48,4 +48,17 @@ func (pRepo *profileInfraStruct) UpdateProfileByUserID(content string, userID ui
 }
 
 // 削除
-// DeleteProfileByUSerID(userID uint)(err error)
+func (pRepo *profileInfraStruct) DeleteProfileByUserID(userID uint) (err error) {
+	deleteProfile := model.Profile{}
+	if result := pRepo.db.Find(&deleteProfile, "user_id = ? AND is_deleted = ?", userID, 0); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
+
+	// 削除状態に更新
+	pRepo.db.Model(&deleteProfile).
+		Where("user_id= ? AND is_deleted = ?", userID, 0).Update("is_deleted", int8(1))
+
+	return nil
+}

@@ -23,6 +23,9 @@ type UserServiceInterface interface {
 	// ユーザを登録
 	SignUpUser(user model.User) (signedUpUser model.User, err error)
 
+	// ユーザを削除
+	DeleteUser(userID uint) (err error)
+
 	// ログインチェック
 	Login(user model.User) (message string, resultUser model.User, err error)
 

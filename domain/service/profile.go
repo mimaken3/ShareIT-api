@@ -17,7 +17,7 @@ type ProfileServiceInterface interface {
 	UpdateProfileByUserID(content string, userID uint) (err error)
 
 	// 削除
-	// DeleteProfileByUSerID(userID uint)(err error)
+	DeleteProfileByUserID(userID uint) (err error)
 }
 
 // DIのための関数

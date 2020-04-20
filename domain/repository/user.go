@@ -16,6 +16,9 @@ type UserRepository interface {
 	// ユーザを登録
 	SignUpUser(user model.User, lastUserId uint) (signedUpUser model.User, err error)
 
+	// ユーザを削除
+	DeleteUser(userID uint) (err error)
+
 	// ログイン
 	Login(user model.User) (message string, resultUser model.User, err error)
 

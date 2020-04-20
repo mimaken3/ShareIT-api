@@ -48,6 +48,9 @@ func InitRouting(e *echo.Echo) {
 	// ユーザを更新
 	userG.PUT("/:user_id", handler.UpdateUserByUserId())
 
+	// ユーザを削除
+	userG.DELETE("/:user_id", handler.DeleteUser())
+
 	// 特定のユーザの全記事を取得(トピック: 文字列区切り)
 	userG.GET("/:user_id/articles", handler.FindArticlesByUserId())
 

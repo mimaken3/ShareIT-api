@@ -123,6 +123,31 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 	return
 }
 
+// ユーザを削除
+func (userRepo *userInfraStruct) DeleteUser(userID uint) (err error) {
+	deleteUser := model.User{}
+	if result := userRepo.db.Find(&deleteUser, "user_id = ? AND is_deleted = ?", userID, 0); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	deleteTime := time.Now().Format(dateFormat)
+	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+
+	// 削除状態に更新
+	userRepo.db.Model(&deleteUser).
+		Where("user_id= ? AND is_deleted = ?", userID, 0).
+		Updates(map[string]interface{}{
+			"deleted_date": customisedDeleteTime,
+			"is_deleted":   int8(1),
+		})
+
+	return nil
+}
+
 // ログイン
 func (userRepo *userInfraStruct) Login(user model.User) (message string, resultUser model.User, err error) {
 	result := userRepo.db.Raw(`
