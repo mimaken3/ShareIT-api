@@ -11,8 +11,8 @@ type userServiceStruct struct {
 
 // Application層はこのInterfaceに依存
 type UserServiceInterface interface {
-	// 全ユーザを取得
-	FindAllUsersService() (users []model.User, err error)
+	// 全ユーザを取得(ページング)
+	FindAllUsersService(refPg int) (users []model.User, allPagingNum int, err error)
 
 	// ユーザ登録のチェック
 	CheckUserInfoService(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error)

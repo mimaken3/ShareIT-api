@@ -7,8 +7,8 @@ import (
 )
 
 // 全ユーザを取得
-func (u *userServiceStruct) FindAllUsersService() ([]model.User, error) {
-	users, err := u.userRepo.FindAllUsers()
+func (u *userServiceStruct) FindAllUsersService(refPg int) (users []model.User, allPagingNum int, err error) {
+	users, allPagingNum, err = u.userRepo.FindAllUsers(refPg)
 	if err != nil {
 		log.Println(err)
 	}
@@ -17,5 +17,5 @@ func (u *userServiceStruct) FindAllUsersService() ([]model.User, error) {
 		users[i].Password = ""
 	}
 
-	return users, err
+	return
 }

@@ -35,8 +35,9 @@ func (SignUpUser) TableName() string {
 	return "users"
 }
 
-// 全ユーザを取得
-func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) {
+// 全ユーザを取得(ページング)
+func (userRepo *userInfraStruct) FindAllUsers(refPg int) (users []model.User, allPagingNum int, err error) {
+	offset := (refPg - 1) * 10
 	rows, err := userRepo.db.Raw(`
 select 
   ddd.*,
@@ -76,8 +77,10 @@ group by
   u.user_id
 ) as ddd
 left join profiles as p on (ddd.user_id = p.user_id) 
-order by ddd.user_id;
-	`).Rows()
+order by ddd.user_id
+limit 10 offset ?
+;
+	`, offset).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
@@ -90,8 +93,12 @@ order by ddd.user_id;
 
 	// レコードがない場合
 	if len(users) == 0 {
-		return nil, errors.New("record not found")
+		return nil, 1, errors.New("record not found")
 	}
+
+	var count int
+	userRepo.db.Table("users").Where("is_deleted = 0").Count(&count)
+	allPagingNum = (count / 10) + 1
 
 	return
 }

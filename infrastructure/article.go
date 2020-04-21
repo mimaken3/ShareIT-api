@@ -87,7 +87,7 @@ group by
 
 	// レコードがない場合
 	if len(articles) == 0 {
-		return nil, 0, errors.New("record not found")
+		return nil, 1, errors.New("record not found")
 	}
 
 	var count int

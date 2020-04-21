@@ -36,7 +36,7 @@ func InitRouting(e *echo.Echo) {
 	// || ユーザ ||
 	// ============
 	userG := apiG.Group("/users")
-	// 全ユーザを取得
+	// 全ユーザを取得(ページング)
 	userG.GET("", handler.FindAllUsers())
 
 	// 最後のユーザIDを取得

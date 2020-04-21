@@ -18,16 +18,34 @@ type APIResult struct {
 	User    model.User `json:"user"`
 }
 
+type UsersResult struct {
+	RefPg        int          `json:"ref_pg"`
+	AllPagingNum int          `json:"all_paging_num"`
+	Users        []model.User `json:"users"`
+}
+
 // 全ユーザを取得
 func FindAllUsers() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		users, err := userService.FindAllUsersService()
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		if refPg == 0 {
+			refPg = 1
+		}
+
+		users, allPagingNum, err := userService.FindAllUsersService(refPg)
 
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())
 		}
 
-		return c.JSON(http.StatusOK, users)
+		var usersResult UsersResult
+		usersResult.RefPg = refPg
+		usersResult.AllPagingNum = allPagingNum
+		usersResult.Users = users
+
+		return c.JSON(http.StatusOK, usersResult)
 	}
 }
 
