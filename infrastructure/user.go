@@ -162,6 +162,7 @@ func (userRepo *userInfraStruct) Login(user model.User) (message string, resultU
 	result := userRepo.db.Raw(`
 select 
   u.user_id, 
+	i.icon_name,
   u.user_name, 
   u.email, 
   u.password, 
@@ -173,6 +174,7 @@ select
 from 
   users as u 
   left join profiles as p on (u.user_id = p.user_id) 
+	left join icons as i on (u.user_id = i.user_id)
   inner join (
     select 
       td.user_id, 
