@@ -41,7 +41,8 @@ func (userRepo *userInfraStruct) FindAllUsers(refPg int) (users []model.User, al
 	rows, err := userRepo.db.Raw(`
 select 
   ddd.*,
-  p.content as profile 
+  p.content as profile,
+	i.icon_name
 from 
   (
 select 
@@ -77,6 +78,7 @@ group by
   u.user_id
 ) as ddd
 left join profiles as p on (ddd.user_id = p.user_id) 
+left join icons as i on (ddd.user_id = i.user_id)
 order by ddd.user_id
 limit 10 offset ?
 ;
@@ -220,6 +222,7 @@ func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, 
 	result := userRepo.db.Raw(`
 select 
   u.user_id, 
+	i.icon_name,
   u.user_name, 
   u.email, 
   u.password, 
@@ -231,6 +234,7 @@ select
 from 
   users as u 
   left join profiles as p on (u.user_id = p.user_id) 
+	left join icons as i on (u.user_id = i.user_id)
   inner join (
     select 
       td.user_id, 
