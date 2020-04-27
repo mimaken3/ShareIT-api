@@ -10,6 +10,10 @@ func (u *userServiceStruct) UpdateUser(userID uint) (updatedUser model.User, err
 	}
 	updatedUser, err = u.userRepo.FindUserByUserId(int(userID))
 
+	// 署名付きURLを取得
+	updatedUser.IconName, err = GetPreSignedURL(updatedUser.IconName)
+
+	// パスワードを隠す
 	updatedUser.Password = ""
 
 	return

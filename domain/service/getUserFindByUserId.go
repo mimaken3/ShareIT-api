@@ -12,6 +12,10 @@ func (u *userServiceStruct) FindUserByUserIdService(userId int) (model.User, err
 	if err != nil {
 		log.Println(err)
 	}
+
+	// 署名付きURLを取得
+	user.IconName, err = GetPreSignedURL(user.IconName)
+
 	// セキュリティのためパスワードを返さない
 	user.Password = ""
 

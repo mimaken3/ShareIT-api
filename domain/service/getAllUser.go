@@ -12,8 +12,12 @@ func (u *userServiceStruct) FindAllUsersService(refPg int) (users []model.User, 
 	if err != nil {
 		log.Println(err)
 	}
-	// セキュリティのためパスワードを返さない
+
 	for i := 0; i < len(users); i++ {
+		// 署名付きURLを取得
+		users[i].IconName, err = GetPreSignedURL(users[i].IconName)
+
+		// セキュリティのためパスワードを返さない
 		users[i].Password = ""
 	}
 
