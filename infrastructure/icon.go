@@ -39,3 +39,12 @@ func (iconRepo *iconInfraStruct) RegisterIcon(userID uint, iconName string, last
 
 	return icon.IconName, err
 }
+
+// アイコンを更新
+func (iconRepo *iconInfraStruct) UpdateIcon(userID uint, formatName string) (updatedIconName string, err error) {
+	updateIcon := model.Icon{}
+
+	iconRepo.db.Model(&updateIcon).Where("user_id = ?", userID).Update("icon_name", formatName)
+
+	return updateIcon.IconName, nil
+}

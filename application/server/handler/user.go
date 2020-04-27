@@ -195,8 +195,12 @@ func UpdateUserByUserId() echo.HandlerFunc {
 		// プロフィールを更新
 		profileService.UpdateProfileByUserID(willBeUpdatedUser.Profile, willBeUpdatedUser.UserID)
 
+		// アイコンを更新
+		updatedIconName, err := iconService.UpdateIcon(willBeUpdatedUser.UserID, willBeUpdatedUser.IconName)
+
 		// 更新日を更新
 		updatedUser, err := userService.UpdateUser(willBeUpdatedUser.UserID)
+		updatedUser.IconName = updatedIconName
 
 		return c.JSON(http.StatusOK, updatedUser)
 

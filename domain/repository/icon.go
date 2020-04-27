@@ -9,5 +9,5 @@ type IconRepository interface {
 	RegisterIcon(userID uint, formatName string, lastIconID uint) (registeredIconName string, err error)
 
 	// アイコンを更新
-	// UpdateIcon(userID uint, formatName string) (updatedIconName string, err error)
+	UpdateIcon(userID uint, formatName string) (updatedIconName string, err error)
 }
