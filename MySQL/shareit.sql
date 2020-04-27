@@ -67,3 +67,13 @@ CREATE TABLE profiles(
   content VARCHAR(1000),
   is_deleted TINYINT(1) NOT NULL DEFAULT '0'
 );
+
+-- アイコン
+DROP TABLE IF EXISTS icons;
+
+CREATE TABLE icons(
+  icon_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  icon_name VARCHAR(255) NOT NULL
+);
+

@@ -90,6 +90,10 @@ func SignUpUser() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, signUpedUser)
 		}
 
+		// アイコンを登録
+		registeredIconName, err := iconService.RegisterIcon(signUpedUser.UserID, user.IconName)
+		signUpedUser.IconName = registeredIconName
+
 		// トピックを登録
 		userInterestedTopicService.CreateUserTopic(signUpedUser.InterestedTopics, signUpedUser.UserID)
 

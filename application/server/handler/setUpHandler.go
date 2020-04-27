@@ -11,6 +11,7 @@ var articleTopicService service.ArticleTopicServiceInterface
 var topicService service.TopicServiceInterface
 var userInterestedTopicService service.UserInterestedTopicServiceInterface
 var profileService service.ProfileServiceInterface
+var iconService service.IconServiceInterface
 
 func DI() {
 	// ユーザ
@@ -40,4 +41,8 @@ func DI() {
 	// プロフィール
 	profileRepo := infrastructure.NewProfileDB(infrastructure.DB)
 	profileService = service.NewProfileService(profileRepo)
+
+	// ユーザアイコン
+	iconRepo := infrastructure.NewIconDB(infrastructure.DB)
+	iconService = service.NewIconService(iconRepo)
 }
