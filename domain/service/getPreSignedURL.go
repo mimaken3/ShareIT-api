@@ -12,24 +12,28 @@ import (
 
 func GetPreSignedURL(iconName string) (preSignedURL string, err error) {
 	accessKey := os.Getenv("AWS_S3_ACCESS_KEY_ID")
-	privateKey := os.Getenv("AWS_S3_SECRET_ACCESS_KEY")
+	secretAccessKey := os.Getenv("AWS_S3_SECRET_ACCESS_KEY")
 	region := "ap-northeast-1"
 	bucketName := "share-it-test"
-	fileName := iconName
 
-	creds := credentials.NewStaticCredentials(accessKey, privateKey, "")
-	sess := session.Must(session.NewSession(&aws.Config{
-		Credentials: creds,
+	s3Config := &aws.Config{
+		Credentials: credentials.NewStaticCredentials(accessKey, secretAccessKey, ""),
 		Region:      aws.String(region),
-	}))
-	s3Client := s3.New(sess)
+	}
 
-	req, _ := s3Client.PutObjectRequest(&s3.PutObjectInput{
+	newSession, err := session.NewSession(s3Config)
+	if err != nil {
+		return "", err
+	}
+
+	s3Client := s3.New(newSession)
+
+	req, _ := s3Client.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
-		Key:    aws.String("/user-icons/" + fileName),
+		Key:    aws.String("user-icons/" + iconName),
 	})
 
-	preSignedURL, err = req.Presign(15 * time.Minute)
+	preSignedURL, _, err = req.PresignRequest(10 * time.Minute)
 
 	return
 }
