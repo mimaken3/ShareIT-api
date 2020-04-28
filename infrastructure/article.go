@@ -245,41 +245,54 @@ group by
 }
 
 // 特定のユーザの全記事を取得
-func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint) (articles []model.Article, err error) {
-
-	rows, err := articleRepo.db.Raw(`
+func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint, refPg int) (articles []model.Article, allPagingNum int, err error) {
+	offset := (refPg - 1) * 10
+	rows, err :=
+		articleRepo.db.Raw(`
 select 
-  a.article_id, 
-  a.article_title, 
-  a.article_content, 
-  group_concat(
-    att.topic_name 
-    order by 
-      att.article_topic_id
-			 separator '/'
-  ) as article_topics, 
-  a.created_user_id, 
-  a.created_date, 
-  a.updated_date, 
-  a.deleted_date 
+  * 
 from 
-  articles as a, 
   (
     select 
-      at.article_topic_id, 
-      at.article_id, 
-      t.topic_name 
+      a.article_id, 
+      a.article_title, 
+      a.article_content, 
+      group_concat(
+        att.topic_name 
+        order by 
+          att.article_topic_id separator '/'
+      ) as article_topics, 
+      a.created_user_id, 
+      a.created_date, 
+      a.updated_date, 
+      a.deleted_date 
     from 
-      article_topics as at 
-      left join topics as t on at.topic_id = t.topic_id
-  ) as att 
-where 
-  a.article_id = att.article_id 
-  and a.created_user_id = ? 
-  and is_deleted = 0 
-group by 
-  a.article_id;
-`, userID).Rows()
+      (
+        select 
+          * 
+        from 
+          articles 
+        where 
+          created_user_id = ?
+      ) as a, 
+      (
+        select 
+          at.article_topic_id, 
+          at.article_id, 
+          t.topic_name 
+        from 
+          article_topics as at 
+          left join topics as t on at.topic_id = t.topic_id
+      ) as att 
+    where 
+      a.article_id = att.article_id 
+      and is_deleted = 0 
+    group by 
+      a.article_id
+  ) as tt 
+limit 
+  10 offset ?;
+`, userID, offset).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
@@ -292,8 +305,12 @@ group by
 
 	// レコードがない場合
 	if len(articles) == 0 {
-		return nil, errors.New("record not found")
+		return nil, 1, errors.New("record not found")
 	}
+
+	var count int
+	articleRepo.db.Table("articles").Where("is_deleted = 0 AND created_user_id = ?", userID).Count(&count)
+	allPagingNum = (count / 10) + 1
 
 	return
 }
