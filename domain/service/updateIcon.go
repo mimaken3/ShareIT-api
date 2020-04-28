@@ -12,7 +12,10 @@ func (i *iconServiceStruct) UpdateIcon(userID uint, formatName string) (updatedI
 		iconName = fmt.Sprint(userID) + "." + formatName
 	}
 
-	updatedIconName, err = i.iconRepo.UpdateIcon(userID, iconName)
+	uIconName, err := i.iconRepo.UpdateIcon(userID, iconName)
+
+	// 署名付きURLを取得
+	updatedIconName, err = GetPreSignedURL(uIconName)
 
 	return
 }

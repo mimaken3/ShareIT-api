@@ -10,4 +10,7 @@ type IconRepository interface {
 
 	// アイコンを更新
 	UpdateIcon(userID uint, formatName string) (updatedIconName string, err error)
+
+	// ユーザIDからアイコン名を取得
+	FindIconNameByUserID(userID uint) (iconName string, err error)
 }

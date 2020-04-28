@@ -48,3 +48,17 @@ func (iconRepo *iconInfraStruct) UpdateIcon(userID uint, formatName string) (upd
 
 	return updateIcon.IconName, nil
 }
+
+// ユーザIDからアイコン名を取得
+func (iconRepo *iconInfraStruct) FindIconNameByUserID(userID uint) (iconName string, err error) {
+	icon := model.Icon{}
+	// SELECT icon_name FROM icons WHERE user_id = ?;
+	if result := iconRepo.db.Select("icon_name").Where("user_id = ?", userID).Find(&icon); result.Error != nil {
+		// レコードがない場合
+		return "", nil
+	}
+
+	iconName = icon.IconName
+
+	return
+}
