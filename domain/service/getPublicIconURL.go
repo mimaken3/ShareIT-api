@@ -33,7 +33,7 @@ func GetHeaderIconURL(iconName string) (preSignedURL string, err error) {
 		Key:    aws.String("user-icons/" + iconName),
 	})
 
-	preSignedURL, _, err = req.PresignRequest(100 * time.Minute)
+	preSignedURL, _, err = req.PresignRequest(72 * time.Hour)
 
 	return
 }
