@@ -33,12 +33,17 @@ func FindAllArticles() echo.HandlerFunc {
 			refPg = 1
 		}
 
+		var articlesResult ArticlesResult
 		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
+
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, err.Error())
+			articlesResult.IsEmpty = true
+			articlesResult.AllPagingNum = allPagingNum
+			articlesResult.Articles = articles
+
+			return c.JSON(http.StatusOK, articlesResult)
 		}
 
-		var articlesResult ArticlesResult
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
 		articlesResult.Articles = articles
@@ -177,7 +182,7 @@ func FindArticlesByUserId() echo.HandlerFunc {
 			articlesResult.AllPagingNum = allPagingNum
 			articlesResult.Articles = articles
 
-			return c.JSON(http.StatusBadRequest, articlesResult)
+			return c.JSON(http.StatusOK, articlesResult)
 		}
 
 		articlesResult.IsEmpty = false
