@@ -64,12 +64,21 @@ func FindArticleByArticleId() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// 記事IDを取得
 		articleId, _ := strconv.Atoi(c.Param("article_id"))
+
+		intUserID, _ := strconv.Atoi(c.Param("user_id"))
+		userID := uint(intUserID)
+
 		article, err := articleService.FindArticleByArticleId(uint(articleId))
 		if err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
 
-		return c.JSON(http.StatusOK, article)
+		var sliceArticle []model.Article
+		sliceArticle = append(sliceArticle, article)
+
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, sliceArticle)
+
+		return c.JSON(http.StatusOK, updatedArticles)
 	}
 }
 

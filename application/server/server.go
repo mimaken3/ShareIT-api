@@ -69,10 +69,10 @@ func InitRouting(e *echo.Echo) {
 	// 全記事を取得(ページング)(トピック: 文字列区切り)
 	userArticleG.GET("", handler.FindAllArticles())
 
-	articleG := apiG.Group("/articles")
-
 	// 記事を取得(トピック: 文字列区切り)
-	articleG.GET("/:article_id", handler.FindArticleByArticleId())
+	userArticleG.GET("/:article_id", handler.FindArticleByArticleId())
+
+	articleG := apiG.Group("/articles")
 
 	// 特定のトピックを含む記事を取得
 	articleG.GET("/topic/:topic_id", handler.FindArticlesByTopicId())
