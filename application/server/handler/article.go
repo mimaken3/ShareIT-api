@@ -26,6 +26,9 @@ func TestResponse() echo.HandlerFunc {
 // 全記事を取得(ページング)
 func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		intUserID, _ := strconv.Atoi(c.Param("user_id"))
+		userID := uint(intUserID)
+
 		// ページング番号を取得
 		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
 
@@ -44,10 +47,13 @@ func FindAllArticles() echo.HandlerFunc {
 			return c.JSON(http.StatusOK, articlesResult)
 		}
 
+		// 各記事にいいね情報を付与
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, articles)
+
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
-		articlesResult.Articles = articles
+		articlesResult.Articles = updatedArticles
 
 		return c.JSON(http.StatusOK, articlesResult)
 	}
