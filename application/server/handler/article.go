@@ -26,7 +26,7 @@ func TestResponse() echo.HandlerFunc {
 // 全記事を取得(ページング)
 func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		intUserID, _ := strconv.Atoi(c.Param("user_id"))
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
 		userID := uint(intUserID)
 
 		// ページング番号を取得
@@ -65,7 +65,7 @@ func FindArticleByArticleId() echo.HandlerFunc {
 		// 記事IDを取得
 		articleId, _ := strconv.Atoi(c.Param("article_id"))
 
-		intUserID, _ := strconv.Atoi(c.Param("user_id"))
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
 		userID := uint(intUserID)
 
 		article, err := articleService.FindArticleByArticleId(uint(articleId))

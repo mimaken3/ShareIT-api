@@ -61,21 +61,13 @@ func InitRouting(e *echo.Echo) {
 	// ==========
 	// || 記事 ||
 	// ==========
-
-	// いいね情報を含むため
-	userIdG := userG.Group("/:user_id")
-	userArticleG := userIdG.Group("/articles")
-
-	// 全記事を取得(ページング)(トピック: 文字列区切り)
-	userArticleG.GET("", handler.FindAllArticles())
-
-	// 記事を取得(トピック: 文字列区切り)
-	userArticleG.GET("/:article_id", handler.FindArticleByArticleId())
-
 	articleG := apiG.Group("/articles")
 
-	// 特定のトピックを含む記事を取得
-	articleG.GET("/topic/:topic_id", handler.FindArticlesByTopicId())
+	// 全記事を取得(ページング)(トピック: 文字列区切り)
+	articleG.GET("", handler.FindAllArticles())
+
+	// 記事を取得(トピック: 文字列区切り)
+	articleG.GET("/:article_id", handler.FindArticleByArticleId())
 
 	// 記事を取得(トピック: 数値区切り)
 	// e.GET("/article/:article_id", handler.FindArticleByArticleId())
@@ -88,6 +80,9 @@ func InitRouting(e *echo.Echo) {
 
 	// 最後の記事IDを取得
 	articleG.GET("/lastArticleId", handler.FindLastArticleId())
+
+	// 特定のトピックを含む記事を取得
+	articleG.GET("/topic/:topic_id", handler.FindArticlesByTopicId())
 
 	// =============
 	// || トピック||
