@@ -91,6 +91,9 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 			return err
 		}
 
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		userID := uint(intUserID)
+
 		// 記事IDを取得
 		articleID, _ := strconv.Atoi(c.Param("article_id"))
 
@@ -116,12 +119,16 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 		// 記事を更新
 		updatedArticle, err := articleService.UpdateArticleByArticleId(willBeUpdatedArticle)
 
+		var sliceArticle []model.Article
+		sliceArticle = append(sliceArticle, updatedArticle)
+
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, sliceArticle)
 		if err != nil {
 			//TODO: Badステータスを返す
 			return err
 		}
 
-		return c.JSON(http.StatusOK, updatedArticle)
+		return c.JSON(http.StatusOK, updatedArticles)
 	}
 }
 
