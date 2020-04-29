@@ -19,6 +19,7 @@ type APIResult struct {
 }
 
 type UsersResult struct {
+	IsEmpty      bool         `json:"is_empty"`
 	RefPg        int          `json:"ref_pg"`
 	AllPagingNum int          `json:"all_paging_num"`
 	Users        []model.User `json:"users"`
@@ -36,11 +37,16 @@ func FindAllUsers() echo.HandlerFunc {
 
 		users, allPagingNum, err := userService.FindAllUsersService(refPg)
 
+		var usersResult UsersResult
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, err.Error())
+			usersResult.IsEmpty = true
+			usersResult.AllPagingNum = allPagingNum
+			usersResult.Users = users
+
+			return c.JSON(http.StatusOK, usersResult)
 		}
 
-		var usersResult UsersResult
+		usersResult.IsEmpty = false
 		usersResult.RefPg = refPg
 		usersResult.AllPagingNum = allPagingNum
 		usersResult.Users = users

@@ -44,6 +44,7 @@ func FindAllArticles() echo.HandlerFunc {
 			return c.JSON(http.StatusOK, articlesResult)
 		}
 
+		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
 		articlesResult.Articles = articles
