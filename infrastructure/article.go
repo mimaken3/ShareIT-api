@@ -92,7 +92,7 @@ group by
 
 	var count int
 	articleRepo.db.Table("articles").Where("is_deleted = 0").Count(&count)
-	allPagingNum = (count / 10) + 1
+	allPagingNum = (count / 11) + 1
 
 	return
 }
@@ -310,7 +310,7 @@ limit
 
 	var count int
 	articleRepo.db.Table("articles").Where("is_deleted = 0 AND created_user_id = ?", userID).Count(&count)
-	allPagingNum = (count / 10) + 1
+	allPagingNum = (count / 11) + 1
 
 	return
 }
@@ -359,7 +359,6 @@ group by
 		if result.Error == nil {
 			articles = append(articles, article)
 		}
-
 	}
 
 	// レコードがない場合
