@@ -11,8 +11,8 @@ type userServiceStruct struct {
 
 // Application層はこのInterfaceに依存
 type UserServiceInterface interface {
-	// 全ユーザを取得
-	FindAllUsersService() (users []model.User, err error)
+	// 全ユーザを取得(ページング)
+	FindAllUsersService(refPg int) (users []model.User, allPagingNum int, err error)
 
 	// ユーザ登録のチェック
 	CheckUserInfoService(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error)
@@ -22,6 +22,9 @@ type UserServiceInterface interface {
 
 	// ユーザを登録
 	SignUpUser(user model.User) (signedUpUser model.User, err error)
+
+	// ユーザを削除
+	DeleteUser(userID uint) (err error)
 
 	// ログインチェック
 	Login(user model.User) (message string, resultUser model.User, err error)
@@ -34,6 +37,9 @@ type UserServiceInterface interface {
 
 	// ユーザのinterested_topicsにあるトピックを削除
 	DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error)
+
+	// 更新日を更新
+	UpdateUser(userID uint) (updatedUser model.User, err error)
 }
 
 // DIのための関数

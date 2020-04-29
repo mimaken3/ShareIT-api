@@ -25,8 +25,7 @@ func (topicRepo *topicInfraStruct) FindLastTopicID() (lastTopicID uint, err erro
 	// SELECT topic_id FROM topics WHERE is_deleted = 0 ORDER BY topic_id DESC LIMIT 1;
 	if result := topicRepo.db.Select("topic_id").Where("is_deleted = ?", 0).Last(&topic); result.Error != nil {
 		// レコードがない場合
-		err = result.Error
-		return
+		return 0, nil
 	}
 
 	lastTopicID = topic.TopicID

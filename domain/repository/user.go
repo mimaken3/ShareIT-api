@@ -4,8 +4,8 @@ import "github.com/mimaken3/ShareIT-api/domain/model"
 
 // UserRepository is interface for infrastructure
 type UserRepository interface {
-	// 全ユーザを取得
-	FindAllUsers() (users []model.User, err error)
+	// 全ユーザを取得(ページング)
+	FindAllUsers(refPg int) (users []model.User, allPagingNum int, err error)
 
 	// ユーザ登録のチェック
 	CheckUserInfo(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error)
@@ -15,6 +15,9 @@ type UserRepository interface {
 
 	// ユーザを登録
 	SignUpUser(user model.User, lastUserId uint) (signedUpUser model.User, err error)
+
+	// ユーザを削除
+	DeleteUser(userID uint) (err error)
 
 	// ログイン
 	Login(user model.User) (message string, resultUser model.User, err error)
@@ -33,4 +36,7 @@ type UserRepository interface {
 
 	// ユーザのinterested_topicsにあるトピックを削除
 	DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error)
+
+	// 更新日を更新
+	UpdateUser(userID uint) (err error)
 }

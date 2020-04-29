@@ -57,3 +57,23 @@ CREATE TABLE user_interested_topics(
   topic_id INT UNSIGNED NOT NULL
 );
 
+
+-- ユーザのプロフィール
+DROP TABLE IF EXISTS profiles;
+
+CREATE TABLE profiles(
+  profile_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  content VARCHAR(1000),
+  is_deleted TINYINT(1) NOT NULL DEFAULT '0'
+);
+
+-- アイコン
+DROP TABLE IF EXISTS icons;
+
+CREATE TABLE icons(
+  icon_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  icon_name VARCHAR(255) NOT NULL
+);
+

@@ -18,16 +18,40 @@ type APIResult struct {
 	User    model.User `json:"user"`
 }
 
+type UsersResult struct {
+	IsEmpty      bool         `json:"is_empty"`
+	RefPg        int          `json:"ref_pg"`
+	AllPagingNum int          `json:"all_paging_num"`
+	Users        []model.User `json:"users"`
+}
+
 // 全ユーザを取得
 func FindAllUsers() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		users, err := userService.FindAllUsersService()
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
 
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, err.Error())
+		if refPg == 0 {
+			refPg = 1
 		}
 
-		return c.JSON(http.StatusOK, users)
+		users, allPagingNum, err := userService.FindAllUsersService(refPg)
+
+		var usersResult UsersResult
+		if err != nil {
+			usersResult.IsEmpty = true
+			usersResult.AllPagingNum = allPagingNum
+			usersResult.Users = users
+
+			return c.JSON(http.StatusOK, usersResult)
+		}
+
+		usersResult.IsEmpty = false
+		usersResult.RefPg = refPg
+		usersResult.AllPagingNum = allPagingNum
+		usersResult.Users = users
+
+		return c.JSON(http.StatusOK, usersResult)
 	}
 }
 
@@ -72,8 +96,15 @@ func SignUpUser() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, signUpedUser)
 		}
 
+		// アイコンを登録
+		registeredIconName, err := iconService.RegisterIcon(signUpedUser.UserID, user.IconName)
+		signUpedUser.IconName = registeredIconName
+
 		// トピックを登録
 		userInterestedTopicService.CreateUserTopic(signUpedUser.InterestedTopics, signUpedUser.UserID)
+
+		// プロフィールを登録
+		err = profileService.CreateProfileByUserID(user.Profile, signUpedUser.UserID)
 
 		return c.JSON(http.StatusOK, signUpedUser)
 	}
@@ -167,10 +198,53 @@ func UpdateUserByUserId() echo.HandlerFunc {
 			}
 		}
 
-		// TODO: 更新日を更新（興味トピック以外を更新する際にやる）
+		// プロフィールを更新
+		profileService.UpdateProfileByUserID(willBeUpdatedUser.Profile, willBeUpdatedUser.UserID)
 
-		return c.JSON(http.StatusOK, willBeUpdatedUser)
+		// 更新日を更新
+		updatedUser, err := userService.UpdateUser(willBeUpdatedUser.UserID)
 
+		// アイコンを更新
+		var iconURL string
+		if willBeUpdatedUser.IconName != "" {
+			iconURL, err = iconService.UpdateIcon(willBeUpdatedUser.UserID, willBeUpdatedUser.IconName)
+			updatedUser.IconName = iconURL
+		} else {
+			iconURL, err = iconService.GetPreSignedURLByUserID(willBeUpdatedUser.UserID)
+			updatedUser.IconName = iconURL
+		}
+
+		return c.JSON(http.StatusOK, updatedUser)
+
+	}
+}
+
+// ユーザを削除
+func DeleteUser() echo.HandlerFunc {
+	return func(c echo.Context) error {
+
+		willBeDeletedUser := model.User{}
+
+		if err := c.Bind(&willBeDeletedUser); err != nil {
+			return err
+		}
+
+		// ユーザIDを取得
+		userID, _ := strconv.Atoi(c.Param("user_id"))
+
+		// パラメータのIDと受け取ったモデルのIDが違う場合、エラーを返す
+		if uint(userID) != willBeDeletedUser.UserID {
+			return c.String(http.StatusBadRequest, "param userID and send user id are different")
+		}
+
+		// TODO: err処理
+		// ユーザを削除
+		_ = userService.DeleteUser(willBeDeletedUser.UserID)
+
+		// プロフィールを削除
+		_ = profileService.DeleteProfileByUserID(uint(userID))
+
+		return c.String(http.StatusOK, "delete success")
 	}
 }
 

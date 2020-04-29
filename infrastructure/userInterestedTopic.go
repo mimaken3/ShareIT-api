@@ -21,7 +21,7 @@ func NewUserInterestedTopicDB(db *gorm.DB) repository.UserInterestedTopicReposit
 func (uiRepo *userInterestedTopicInfraStruct) GetLastID() (lastID int, err error) {
 	ui := model.UserInterestedTopic{}
 	if result := uiRepo.db.Select("user_interested_topics_id").Last(&ui); result.Error != nil {
-		return 0, result.Error
+		return 0, nil
 	}
 
 	lastID = int(ui.UserInterestedTopicsID)

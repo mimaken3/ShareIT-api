@@ -35,9 +35,16 @@ func (SignUpUser) TableName() string {
 	return "users"
 }
 
-// 全ユーザを取得
-func (userRepo *userInfraStruct) FindAllUsers() (users []model.User, err error) {
+// 全ユーザを取得(ページング)
+func (userRepo *userInfraStruct) FindAllUsers(refPg int) (users []model.User, allPagingNum int, err error) {
+	offset := (refPg - 1) * 10
 	rows, err := userRepo.db.Raw(`
+select 
+  ddd.*,
+  p.content as profile,
+	i.icon_name
+from 
+  (
 select 
   u.user_id, 
   u.user_name,
@@ -53,7 +60,8 @@ select
   u.updated_date,
   u.deleted_date
 from 
-  users as u, 
+  users as u
+    , 
   (
     select 
       uit.user_interested_topics_id, 
@@ -62,14 +70,19 @@ from
     from 
       user_interested_topics as uit 
       left join topics as t on (t.topic_id = uit.topic_id)
-  ) as ut 
+  ) as ut   
 where 
   u.user_id = ut.user_id 
   and u.is_deleted = 0
 group by 
   u.user_id
+) as ddd
+left join profiles as p on (ddd.user_id = p.user_id) 
+left join icons as i on (ddd.user_id = i.user_id)
+order by ddd.user_id
+limit 10 offset ?
 ;
-	`).Rows()
+	`, offset).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
@@ -82,8 +95,12 @@ group by
 
 	// レコードがない場合
 	if len(users) == 0 {
-		return nil, errors.New("record not found")
+		return nil, 1, errors.New("record not found")
 	}
+
+	var count int
+	userRepo.db.Table("users").Where("is_deleted = 0").Count(&count)
+	allPagingNum = (count / 11) + 1
 
 	return
 }
@@ -115,20 +132,49 @@ func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUser
 	return
 }
 
+// ユーザを削除
+func (userRepo *userInfraStruct) DeleteUser(userID uint) (err error) {
+	deleteUser := model.User{}
+	if result := userRepo.db.Find(&deleteUser, "user_id = ? AND is_deleted = ?", userID, 0); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	deleteTime := time.Now().Format(dateFormat)
+	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+
+	// 削除状態に更新
+	userRepo.db.Model(&deleteUser).
+		Where("user_id= ? AND is_deleted = ?", userID, 0).
+		Updates(map[string]interface{}{
+			"deleted_date": customisedDeleteTime,
+			"is_deleted":   int8(1),
+		})
+
+	return nil
+}
+
 // ログイン
 func (userRepo *userInfraStruct) Login(user model.User) (message string, resultUser model.User, err error) {
 	result := userRepo.db.Raw(`
 select 
-  u.user_id,
-  u.user_name,
-  u.email,
-  u.password,
-  dd.interested_topics,
-  u.created_date,
-  u.updated_date,
+  u.user_id, 
+	i.icon_name,
+  u.user_name, 
+  u.email, 
+  u.password, 
+  p.content as profile, 
+  dd.interested_topics, 
+  u.created_date, 
+  u.updated_date, 
   u.deleted_date 
 from 
   users as u 
+  left join profiles as p on (u.user_id = p.user_id) 
+	left join icons as i on (u.user_id = i.user_id)
   inner join (
     select 
       td.user_id, 
@@ -136,7 +182,7 @@ from
         td.topic_name 
         order by 
           td.user_interested_topics_id separator "/"
-      ) as interested_topics
+      ) as interested_topics 
     from 
       (
         select 
@@ -150,8 +196,8 @@ from
       ) as td 
     group by 
       td.user_id
-  ) as dd on (dd.user_id = u.user_id)
-  where 
+  ) as dd on (dd.user_id = u.user_id) 
+where 
   u.user_name = ? 
 	`, user.UserName).Scan(&resultUser)
 
@@ -178,35 +224,43 @@ func (userRepo *userInfraStruct) FindUserByUserId(userId int) (user model.User, 
 	result := userRepo.db.Raw(`
 select 
   u.user_id, 
-  u.user_name,
-  u.email,
-  u.password,
-  group_concat(
-    ut.topic_name  
-    order by 
-      ut.user_interested_topics_id
-      separator '/'
-  ) as interested_topics,
-  u.created_date,
-  u.updated_date,
-  u.deleted_date
+	i.icon_name,
+  u.user_name, 
+  u.email, 
+  u.password, 
+  p.content as profile, 
+  dd.interested_topics, 
+  u.created_date, 
+  u.updated_date, 
+  u.deleted_date 
 from 
-  users as u, 
-  (
+  users as u 
+  left join profiles as p on (u.user_id = p.user_id) 
+	left join icons as i on (u.user_id = i.user_id)
+  inner join (
     select 
-      uit.user_interested_topics_id, 
-      uit.user_id, 
-      t.topic_name 
+      td.user_id, 
+      group_concat(
+        td.topic_name 
+        order by 
+          td.user_interested_topics_id separator "/"
+      ) as interested_topics 
     from 
-      user_interested_topics as uit 
-      left join topics as t on (t.topic_id = uit.topic_id)
-  ) as ut 
+      (
+        select 
+          uit.user_interested_topics_id, 
+          uit.user_id, 
+          t.topic_id, 
+          t.topic_name 
+        from 
+          user_interested_topics as uit 
+          inner join topics as t on (uit.topic_id = t.topic_id)
+      ) as td 
+    group by 
+      td.user_id
+  ) as dd on (dd.user_id = u.user_id) 
 where 
-  u.user_id = ut.user_id 
-	and u.user_id = ?
-  and u.is_deleted = 0
-group by 
-  u.user_id;
+  u.user_id = ?;
 `, userId).Scan(&user)
 
 	if result.Error != nil {
@@ -313,25 +367,13 @@ func (userRepo *userInfraStruct) PasswordToHash(password string) (hashedPassword
 	return
 }
 
-// // パスワードが一致するかのチェック
-// func (userRepo *userInfraStruct) VerifyPassword(user model.User) (loginUser model.User, err error) {
-// 	dbUser := model.User{}
-//
-// 	if result := userRepo.db.Select("password").Where("user_name = ?", loginUser.UserName).Find(&dbUser); result.Error != nil {
-// 		// レコードがない場合
-// 		return model.User{}, result.Error
-// 	}
-// 	result := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(loginUser.Password))
-// 	return result, err
-// }
-
 // 最後のユーザIDを取得
 func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 	user := model.User{}
 	// SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1; と同義
-	if result := userRepo.db.Select("user_id").Where("is_deleted = ?", 0).Last(&user); result.Error != nil {
+	if result := userRepo.db.Select("user_id").Last(&user); result.Error != nil {
 		// レコードがない場合
-		err = result.Error
+		return 0, nil
 	}
 	lastUserId = user.UserID
 
@@ -340,5 +382,19 @@ func (userRepo *userInfraStruct) FindLastUserId() (lastUserId uint, err error) {
 
 // ユーザのinterested_topicsにあるトピックを削除
 func (userRepo *userInfraStruct) DeleteTopicFromInterestedTopics(deleteTopicID uint) (err error) {
+	return
+}
+
+// 更新日を更新
+func (userRepo *userInfraStruct) UpdateUser(userID uint) (err error) {
+	user := model.User{}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	nowTime := time.Now().Format(dateFormat)
+	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
+
+	userRepo.db.Model(&user).Where("user_id = ?", userID).Update("updated_date", customisedNowTime)
+
 	return
 }

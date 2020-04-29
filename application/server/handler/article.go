@@ -10,6 +10,7 @@ import (
 )
 
 type ArticlesResult struct {
+	IsEmpty      bool            `json:"is_empty"`
 	RefPg        int             `json:"ref_pg"`
 	AllPagingNum int             `json:"all_paging_num"`
 	Articles     []model.Article `json:"articles"`
@@ -32,12 +33,18 @@ func FindAllArticles() echo.HandlerFunc {
 			refPg = 1
 		}
 
+		var articlesResult ArticlesResult
 		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
+
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, err.Error())
+			articlesResult.IsEmpty = true
+			articlesResult.AllPagingNum = allPagingNum
+			articlesResult.Articles = articles
+
+			return c.JSON(http.StatusOK, articlesResult)
 		}
 
-		var articlesResult ArticlesResult
+		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
 		articlesResult.Articles = articles
@@ -157,18 +164,34 @@ func CreateArticle() echo.HandlerFunc {
 // 特定のユーザの全記事を取得
 func FindArticlesByUserId() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
 		userID, _ := strconv.Atoi(c.Param("user_id"))
 		// intをuintに変換
 		var uintUserID uint = uint(userID)
 
-		articles, err := articleService.FindArticlesByUserIdService(uintUserID)
-
-		if err != nil {
-			// ない場合
-			return c.JSON(http.StatusBadRequest, err.Error())
+		if refPg == 0 {
+			refPg = 1
 		}
 
-		return c.JSON(http.StatusOK, articles)
+		var articlesResult ArticlesResult
+
+		articles, allPagingNum, err := articleService.FindArticlesByUserIdService(uintUserID, refPg)
+		if err != nil {
+			articlesResult.IsEmpty = true
+			articlesResult.AllPagingNum = allPagingNum
+			articlesResult.Articles = articles
+
+			return c.JSON(http.StatusOK, articlesResult)
+		}
+
+		articlesResult.IsEmpty = false
+		articlesResult.RefPg = refPg
+		articlesResult.AllPagingNum = allPagingNum
+		articlesResult.Articles = articles
+
+		return c.JSON(http.StatusOK, articlesResult)
 	}
 }
 

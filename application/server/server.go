@@ -11,6 +11,7 @@ import (
 func InitRouting(e *echo.Echo) {
 	// テストレスポンスを返す
 	e.GET("/test", handler.TestResponse())
+
 	// ユーザ登録時のチェック
 	e.POST("/signUp/check", handler.CheckUserInfo())
 
@@ -36,7 +37,7 @@ func InitRouting(e *echo.Echo) {
 	// || ユーザ ||
 	// ============
 	userG := apiG.Group("/users")
-	// 全ユーザを取得
+	// 全ユーザを取得(ページング)
 	userG.GET("", handler.FindAllUsers())
 
 	// 最後のユーザIDを取得
@@ -47,6 +48,9 @@ func InitRouting(e *echo.Echo) {
 
 	// ユーザを更新
 	userG.PUT("/:user_id", handler.UpdateUserByUserId())
+
+	// ユーザを削除
+	userG.DELETE("/:user_id", handler.DeleteUser())
 
 	// 特定のユーザの全記事を取得(トピック: 文字列区切り)
 	userG.GET("/:user_id/articles", handler.FindArticlesByUserId())
