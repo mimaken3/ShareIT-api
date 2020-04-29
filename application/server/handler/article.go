@@ -78,7 +78,7 @@ func FindArticleByArticleId() echo.HandlerFunc {
 
 		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, sliceArticle)
 
-		return c.JSON(http.StatusOK, updatedArticles)
+		return c.JSON(http.StatusOK, updatedArticles[0])
 	}
 }
 
@@ -128,7 +128,7 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 			return err
 		}
 
-		return c.JSON(http.StatusOK, updatedArticles)
+		return c.JSON(http.StatusOK, updatedArticles[0])
 	}
 }
 
@@ -198,7 +198,7 @@ func CreateArticle() echo.HandlerFunc {
 		// 各記事にいいね情報を付与
 		updatedArticles, _ := likeService.GetLikeInfoByArtiles(loginUserID, sliceArticle)
 
-		return c.JSON(http.StatusOK, updatedArticles)
+		return c.JSON(http.StatusOK, updatedArticles[0])
 	}
 }
 
