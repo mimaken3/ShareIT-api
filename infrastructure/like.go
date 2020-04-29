@@ -21,7 +21,7 @@ func (likeRepo *likeInfraStruct) GetLikeInfoByArtiles(userID uint, articles []mo
 	for _, article := range articles {
 		articleID := article.ArticleID
 		var count int
-		likeRepo.db.Table("likes").Where("user_id = ? AND article_id = ?", userID, articleID).Count(&count)
+		likeRepo.db.Table("likes").Where("article_id = ?", articleID).Count(&count)
 
 		// いいね数を格納
 		likeNum = append(likeNum, count)
