@@ -77,3 +77,11 @@ CREATE TABLE icons(
   icon_name VARCHAR(255) NOT NULL
 );
 
+-- いいね
+DROP TABLE IF EXISTS likes;
+
+CREATE TABLE likes(
+  like_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  article_Id INT UNSIGNED NOT NULL
+);

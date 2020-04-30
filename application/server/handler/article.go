@@ -26,6 +26,9 @@ func TestResponse() echo.HandlerFunc {
 // 全記事を取得(ページング)
 func FindAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		userID := uint(intUserID)
+
 		// ページング番号を取得
 		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
 
@@ -44,10 +47,13 @@ func FindAllArticles() echo.HandlerFunc {
 			return c.JSON(http.StatusOK, articlesResult)
 		}
 
+		// 各記事にいいね情報を付与
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, articles)
+
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
-		articlesResult.Articles = articles
+		articlesResult.Articles = updatedArticles
 
 		return c.JSON(http.StatusOK, articlesResult)
 	}
@@ -58,12 +64,21 @@ func FindArticleByArticleId() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// 記事IDを取得
 		articleId, _ := strconv.Atoi(c.Param("article_id"))
+
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		userID := uint(intUserID)
+
 		article, err := articleService.FindArticleByArticleId(uint(articleId))
 		if err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
 
-		return c.JSON(http.StatusOK, article)
+		var sliceArticle []model.Article
+		sliceArticle = append(sliceArticle, article)
+
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, sliceArticle)
+
+		return c.JSON(http.StatusOK, updatedArticles[0])
 	}
 }
 
@@ -75,6 +90,9 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 		if err := c.Bind(&willBeUpdatedArticle); err != nil {
 			return err
 		}
+
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		userID := uint(intUserID)
 
 		// 記事IDを取得
 		articleID, _ := strconv.Atoi(c.Param("article_id"))
@@ -101,12 +119,16 @@ func UpdateArticleByArticleId() echo.HandlerFunc {
 		// 記事を更新
 		updatedArticle, err := articleService.UpdateArticleByArticleId(willBeUpdatedArticle)
 
+		var sliceArticle []model.Article
+		sliceArticle = append(sliceArticle, updatedArticle)
+
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, sliceArticle)
 		if err != nil {
 			//TODO: Badステータスを返す
 			return err
 		}
 
-		return c.JSON(http.StatusOK, updatedArticle)
+		return c.JSON(http.StatusOK, updatedArticles[0])
 	}
 }
 
@@ -151,13 +173,32 @@ func CreateArticle() echo.HandlerFunc {
 		if err := c.Bind(&createArticle); err != nil {
 			return err
 		}
+
+		// ログイン中のユーザIDを取得
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		loginUserID := uint(intUserID)
+
+		paramUserID, _ := strconv.Atoi(c.Param("user_id"))
+		// intをuintに変換
+		var paramUintUserID uint = uint(paramUserID)
+
+		if !(loginUserID == paramUintUserID && loginUserID == createArticle.CreatedUserID) {
+			return c.String(http.StatusBadRequest, "URLが間違っています")
+		}
+
 		// 記事を追加
 		createdArticle, _ := articleService.CreateArticle(createArticle)
 
 		// 記事トピックを追加
 		articleTopicService.CreateArticleTopic(createdArticle)
 
-		return c.JSON(http.StatusOK, createdArticle)
+		var sliceArticle []model.Article
+		sliceArticle = append(sliceArticle, createdArticle)
+
+		// 各記事にいいね情報を付与
+		updatedArticles, _ := likeService.GetLikeInfoByArtiles(loginUserID, sliceArticle)
+
+		return c.JSON(http.StatusOK, updatedArticles[0])
 	}
 }
 
@@ -166,6 +207,10 @@ func FindArticlesByUserId() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// ページング番号を取得
 		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		// ログイン中のユーザIDを取得
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		tryToGetUserID := uint(intUserID)
 
 		userID, _ := strconv.Atoi(c.Param("user_id"))
 		// intをuintに変換
@@ -186,10 +231,13 @@ func FindArticlesByUserId() echo.HandlerFunc {
 			return c.JSON(http.StatusOK, articlesResult)
 		}
 
+		// 各記事にいいね情報を付与
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(tryToGetUserID, articles)
+
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
-		articlesResult.Articles = articles
+		articlesResult.Articles = updatedArticles
 
 		return c.JSON(http.StatusOK, articlesResult)
 	}
@@ -198,6 +246,17 @@ func FindArticlesByUserId() echo.HandlerFunc {
 // 特定のトピックを含む記事を取得
 func FindArticlesByTopicId() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		if refPg == 0 {
+			refPg = 1
+		}
+
+		// ログイン中のユーザIDを取得
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		loginUserID := uint(intUserID)
+
 		topicID, _ := strconv.Atoi(c.Param("topic_id"))
 		var uintTopicID uint = uint(topicID)
 
@@ -205,13 +264,26 @@ func FindArticlesByTopicId() echo.HandlerFunc {
 		var articleIds []model.ArticleTopic
 		articleIds, _ = articleService.FindArticleIdsByTopicIdService(uintTopicID)
 
-		articles, err := articleService.FindArticlesByTopicIdService(articleIds)
+		var articlesResult ArticlesResult
+
+		articles, allPagingNum, err := articleService.FindArticlesByTopicIdService(articleIds, loginUserID, refPg)
 		if err != nil {
-			// ない場合
-			return c.JSON(http.StatusBadRequest, err.Error())
+			articlesResult.IsEmpty = true
+			articlesResult.AllPagingNum = allPagingNum
+			articlesResult.Articles = articles
+
+			return c.JSON(http.StatusOK, articlesResult)
 		}
 
-		return c.JSON(http.StatusOK, articles)
+		// 各記事にいいね情報を付与
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(loginUserID, articles)
+
+		articlesResult.IsEmpty = false
+		articlesResult.RefPg = refPg
+		articlesResult.AllPagingNum = allPagingNum
+		articlesResult.Articles = updatedArticles
+
+		return c.JSON(http.StatusOK, articlesResult)
 	}
 }
 

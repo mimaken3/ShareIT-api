@@ -316,55 +316,67 @@ limit
 }
 
 // 特定のトピックを含む全記事を取得
-func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.ArticleTopic) (articles []model.Article, err error) {
-	for i := 0; i < len(articleIds); i++ {
-		// TODO: 要修正 毎回articleを作ってる
-		var article = model.Article{}
+func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.ArticleTopic, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error) {
+	offset := (refPg - 1) * 10
 
-		result := articleRepo.db.Raw(`
-select 
-  a.article_id, 
-  a.article_title, 
-  a.article_content, 
-  group_concat(
-    att.topic_name 
-    order by 
-      att.article_topic_id
-			 separator '/'
-  ) as article_topics, 
-  a.created_user_id, 
-  a.created_date, 
-  a.updated_date, 
-  a.deleted_date 
-from 
-  articles as a, 
-  (
-    select 
-      at.article_topic_id, 
-      at.article_id, 
-      at.topic_id, 
-      t.topic_name 
-    from 
-      article_topics as at 
-      left join topics as t on at.topic_id = t.topic_id
-  ) as att 
-where 
-  a.article_id = att.article_id 
-  and a.article_id = ? 
-  and is_deleted = 0 
-group by 
-  a.article_id;
-			`, articleIds[i].ArticleID).Scan(&article)
+	var articlesIDArr []uint
 
-		if result.Error == nil {
-			articles = append(articles, article)
-		}
+	// 構造体の配列からuintの配列に変換
+	for _, v := range articleIds {
+		articlesIDArr = append(articlesIDArr, v.ArticleID)
 	}
+
+	articleRepo.db.Raw(`
+select 
+	* 
+from 
+	(
+		select 
+			a.article_id, 
+			a.article_title, 
+			a.article_content, 
+			group_concat(
+				att.topic_name 
+				order by 
+					att.article_topic_id separator '/'
+			) as article_topics, 
+			a.created_user_id, 
+			a.created_date, 
+			a.updated_date, 
+			a.deleted_date 
+		from 
+			articles as a, 
+			(
+				select 
+					at.article_topic_id, 
+					at.article_id, 
+					at.topic_id, 
+					t.topic_name 
+				from 
+					article_topics as at 
+					left join topics as t on at.topic_id = t.topic_id
+			) as att 
+		where 
+			a.article_id = att.article_id 
+			and a.article_id in (?) 
+			and is_deleted = 0 
+		group by 
+			a.article_id
+	) as ddd 
+limit 
+	10 offset ?;
+`, articlesIDArr, offset).Scan(&articles)
 
 	// レコードがない場合
 	if len(articles) == 0 {
-		return nil, errors.New("record not found")
+		return nil, 1, errors.New("record not found")
 	}
+
+	var count int
+	// article_topicsテーブルに削除フラグがないため(正確なレコード数が取得出来てない)
+	// 以下の記述でレコードの数を取得
+	articleRepo.db.Table("articles").Where("is_deleted = 0 AND article_id IN (?)", articlesIDArr).Count(&count)
+	allPagingNum = (count / 11) + 1
 
 	return
 }
