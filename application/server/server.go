@@ -100,10 +100,10 @@ func InitRouting(e *echo.Echo) {
 	commentG.GET("", handler.FindAllComment())
 
 	// コメントを編集
-	// commentG.PUT("", hander.UpdateComment())
+	commentG.PUT("", handler.UpdateComment())
 
 	// コメントを削除
-	// commentG.DELETE("/:comment_id", handler.DeleteComment())
+	commentG.DELETE("/:comment_id", handler.DeleteComment())
 
 	// =============
 	// || トピック||

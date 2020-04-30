@@ -66,9 +66,31 @@ func (commentRepo *commentInfraStruct) FindAllComments(articleID uint) (comments
 }
 
 // コメントを編集
-// func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment) (updatedComment model.Comment, err error) {
-// 	return
-// }
+func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment) (updatedComment model.Comment, err error) {
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	updateTime := time.Now().Format(dateFormat)
+	customisedUpdateTime, _ := time.Parse(dateFormat, updateTime)
+
+	commentID := updateComment.CommentID
+
+	// 更新するフィールドを設定
+	updateContent := updateComment.Content
+
+	// 更新
+	commentRepo.db.Model(&updatedComment).
+		Where("comment_id = ?", commentID).
+		Updates(map[string]interface{}{
+			"content":      updateContent,
+			"updated_date": customisedUpdateTime,
+		})
+
+	updatedComment.CommentID = updateComment.CommentID
+	updatedComment.ArticleID = updateComment.ArticleID
+	updatedComment.UserID = updateComment.UserID
+
+	return
+}
 
 // コメントを削除
 // func (commentRepo *commentInfraStruct) DeleteComment(commentID uint) (err error) {

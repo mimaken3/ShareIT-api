@@ -37,11 +37,7 @@ func FindAllComment() echo.HandlerFunc {
 		comments, err := commentService.FindAllComments(articleID)
 
 		if err != nil {
-			// if err == "record not found" {
-			// 	return c.JSON(http.StatusOK, err.Error)
-			// } else {
 			return c.String(http.StatusBadRequest, err.Error())
-			// }
 		}
 
 		return c.JSON(http.StatusOK, comments)
@@ -49,11 +45,21 @@ func FindAllComment() echo.HandlerFunc {
 }
 
 // コメントを編集
-// func UpdateComment() echo.HandlerFunc{
-// 	return func(c echo.Context) error {
-//
-// 	}
-// }
+func UpdateComment() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		updateComment := model.Comment{}
+		if err := c.Bind(&updateComment); err != nil {
+			return err
+		}
+
+		updatedComment, err := commentService.UpdateComment(updateComment)
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+
+		return c.JSON(http.StatusOK, updatedComment)
+	}
+}
 
 // コメントを削除
 // func DeleteComment() echo.HandlerFunc{
