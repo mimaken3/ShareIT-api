@@ -11,13 +11,20 @@ import (
 // いいねON/OFF
 func ToggleLikeByArticle() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		like := model.Like{}
+		if err := c.Bind(&like); err != nil {
+			return err
+		}
+
 		// いいねしたユーザIDを取得
-		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
-		userID := uint(intUserID)
+		userID := like.UserID
 
 		// いいねした記事IDを取得
 		_articleID, _ := strconv.Atoi(c.Param("article_id"))
 		articleID := uint(_articleID)
+		if !(articleID == like.ArticleID) {
+			return c.String(http.StatusBadRequest, "URL、もしくはBodyの中身が違います")
+		}
 
 		// ページング番号を取得
 		isLiked, _ := strconv.ParseBool(c.QueryParam("is_liked"))
