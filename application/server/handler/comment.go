@@ -62,8 +62,21 @@ func UpdateComment() echo.HandlerFunc {
 }
 
 // コメントを削除
-// func DeleteComment() echo.HandlerFunc{
-// 	return func(c echo.Context) error {
-//
-// 	}
-// }
+func DeleteComment() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// コメントIDを取得
+		_commentID, _ := strconv.Atoi(c.Param("comment_id"))
+		commentID := uint(_commentID)
+
+		err := commentService.DeleteComment(commentID)
+
+		if err == nil {
+			// 削除に成功したら
+			return c.String(http.StatusOK, "Successfully deleted comment")
+		} else {
+			// 削除に失敗したら
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+
+	}
+}

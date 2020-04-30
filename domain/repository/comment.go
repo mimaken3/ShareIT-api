@@ -17,5 +17,5 @@ type CommentRepository interface {
 	UpdateComment(updateComment model.Comment) (updatedComment model.Comment, err error)
 
 	// コメントを削除
-	// DeleteComment(commentID uint)(err error)
+	DeleteComment(commentID uint) (err error)
 }
