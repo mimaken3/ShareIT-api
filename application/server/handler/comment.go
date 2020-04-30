@@ -37,7 +37,7 @@ func FindAllComment() echo.HandlerFunc {
 		comments, err := commentService.FindAllComments(articleID)
 
 		if err != nil {
-			return c.String(http.StatusOK, err.Error())
+			return c.JSON(http.StatusOK, []model.Comment{})
 		}
 
 		return c.JSON(http.StatusOK, comments)
