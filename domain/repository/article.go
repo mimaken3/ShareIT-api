@@ -20,7 +20,7 @@ type ArticleRepository interface {
 	FindArticlesByUserId(userID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
 
 	// 特定のトピックを含む記事を取得
-	FindArticlesByTopicId(articleIds []model.ArticleTopic) (articles []model.Article, err error)
+	FindArticlesByTopicId(articleIds []model.ArticleTopic, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
 
 	// 指定したトピックを含む記事トピックを取得
 	FindArticleIdsByTopicId(topicID uint) (articleIds []model.ArticleTopic, err error)

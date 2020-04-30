@@ -7,8 +7,8 @@ import (
 )
 
 // 特定のトピックを含む記事を取得
-func (a *articleServiceStruct) FindArticlesByTopicIdService(articleIds []model.ArticleTopic) (articles []model.Article, err error) {
-	articles, err = a.articleRepo.FindArticlesByTopicId(articleIds)
+func (a *articleServiceStruct) FindArticlesByTopicIdService(articleIds []model.ArticleTopic, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error) {
+	articles, allPagingNum, err = a.articleRepo.FindArticlesByTopicId(articleIds, loginUserID, refPg)
 	if err != nil {
 		log.Println(err)
 	}
