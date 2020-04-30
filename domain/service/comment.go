@@ -12,7 +12,7 @@ type commentServiceStruct struct {
 // Application層はこのInterfaceに依存
 type CommentServiceInterface interface {
 	// コメント作成
-	CreateComment(createComment model.Comment) (createdComment model.Comment, err error)
+	CreateComment(createComment model.Comment) (createdComment model.ResponseComment, err error)
 
 	// 記事のコメント一覧取得
 	FindAllComments(articleID uint) (comments []model.ResponseComment, err error)

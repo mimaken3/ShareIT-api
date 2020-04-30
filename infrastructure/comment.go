@@ -31,7 +31,7 @@ func (commentRepo *commentInfraStruct) FindLastCommentID() (lastCommentID uint, 
 }
 
 // コメント作成
-func (commentRepo *commentInfraStruct) CreateComment(createComment model.Comment, lastCommentID uint) (createdComment model.Comment, err error) {
+func (commentRepo *commentInfraStruct) CreateComment(createComment model.Comment, lastCommentID uint) (createdComment model.ResponseComment, err error) {
 	// 現在の日付を取得
 	const dateFormat = "2006-01-02 15:04:05"
 	nowTime := time.Now().Format(dateFormat)
@@ -40,16 +40,43 @@ func (commentRepo *commentInfraStruct) CreateComment(createComment model.Comment
 	const defaultDeletedDateStr = "9999-12-31 23:59:59"
 	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
 
+	var _createdComment model.Comment
 	// DBに保存する記事のモデルを作成
-	createdComment.CommentID = lastCommentID + 1
-	createdComment.ArticleID = createComment.ArticleID
-	createdComment.UserID = createComment.UserID
-	createdComment.Content = createComment.Content
-	createdComment.CreatedDate = customisedNowTime
-	createdComment.UpdatedDate = customisedNowTime
-	createdComment.DeletedDate = defaultDeletedDate
+	_createdComment.CommentID = lastCommentID + 1
+	_createdComment.ArticleID = createComment.ArticleID
+	_createdComment.UserID = createComment.UserID
+	_createdComment.Content = createComment.Content
+	_createdComment.CreatedDate = customisedNowTime
+	_createdComment.UpdatedDate = customisedNowTime
+	_createdComment.DeletedDate = defaultDeletedDate
 
-	commentRepo.db.Create(&createdComment)
+	commentRepo.db.Create(&_createdComment)
+
+	result := commentRepo.db.Raw(`
+SELECT 
+	c.comment_id, 
+	c.article_id, 
+	c.user_id, 
+	u.user_name, 
+	i.icon_name,
+	c.content, 
+	c.created_date, 
+	c.updated_date, 
+	c.deleted_date 
+FROM 
+	comments as c 
+	left join users as u on (c.user_id = u.user_id) 
+	left join icons as i on (c.user_id = i.user_id)
+WHERE 
+	c.is_deleted = 0 
+	AND c.comment_id = ? 
+;
+	`, _createdComment.CommentID).Scan(&createdComment)
+
+	if result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+	}
 
 	return
 }

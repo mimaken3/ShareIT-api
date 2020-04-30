@@ -8,7 +8,7 @@ type CommentRepository interface {
 	FindLastCommentID() (lastCommentID uint, err error)
 
 	// コメント作成
-	CreateComment(createComment model.Comment, lastCommentID uint) (createdComment model.Comment, err error)
+	CreateComment(createComment model.Comment, lastCommentID uint) (createdComment model.ResponseComment, err error)
 
 	// 記事のコメント一覧取得
 	FindAllComments(articleID uint) (comments []model.ResponseComment, err error)
