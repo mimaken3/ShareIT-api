@@ -122,7 +122,7 @@ WHERE
 }
 
 // コメントを編集
-func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment) (updatedComment model.Comment, err error) {
+func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment) (updatedComment model.ResponseComment, err error) {
 	// 現在の日付を取得
 	const dateFormat = "2006-01-02 15:04:05"
 	updateTime := time.Now().Format(dateFormat)
@@ -133,18 +133,40 @@ func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment
 	// 更新するフィールドを設定
 	updateContent := updateComment.Content
 
+	var _updatedComment model.Comment
 	// 更新
-	commentRepo.db.Model(&updatedComment).
+	commentRepo.db.Model(&_updatedComment).
 		Where("comment_id = ?", commentID).
 		Updates(map[string]interface{}{
 			"content":      updateContent,
 			"updated_date": customisedUpdateTime,
 		})
 
-	updatedComment.CommentID = updateComment.CommentID
-	updatedComment.ArticleID = updateComment.ArticleID
-	updatedComment.UserID = updateComment.UserID
+	result := commentRepo.db.Raw(`
+SELECT 
+	c.comment_id, 
+	c.article_id, 
+	c.user_id, 
+	u.user_name, 
+	i.icon_name,
+	c.content, 
+	c.created_date, 
+	c.updated_date, 
+	c.deleted_date 
+FROM 
+	comments as c 
+	left join users as u on (c.user_id = u.user_id) 
+	left join icons as i on (c.user_id = i.user_id)
+WHERE 
+	c.is_deleted = 0 
+	AND c.comment_id = ? 
+;
+	`, commentID).Scan(&updatedComment)
 
+	if result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+	}
 	return
 }
 
