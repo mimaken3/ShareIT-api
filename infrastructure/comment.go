@@ -55,11 +55,40 @@ func (commentRepo *commentInfraStruct) CreateComment(createComment model.Comment
 }
 
 // 記事のコメント一覧取得
-func (commentRepo *commentInfraStruct) FindAllComments(articleID uint) (comments []model.Comment, err error) {
-	// SELECT * FROM comments WHERE is_deleted = 0 AND article_id = ?;
-	commentRepo.db.Where("is_deleted = 0 AND article_id = ?", articleID).Find(&comments)
+func (commentRepo *commentInfraStruct) FindAllComments(articleID uint) (comments []model.ResponseComment, err error) {
+	rows, err := commentRepo.db.Raw(`
+SELECT 
+	c.comment_id, 
+	c.article_id, 
+	c.user_id, 
+	u.user_name, 
+	i.icon_name,
+	c.content, 
+	c.created_date, 
+	c.updated_date, 
+	c.deleted_date 
+FROM 
+	comments as c 
+	left join users as u on (c.user_id = u.user_id) 
+	left join icons as i on (c.user_id = i.user_id)
+WHERE 
+	c.is_deleted = 0 
+	AND c.article_id = ? 
+;
+	`, articleID).Rows()
+
+	defer rows.Close()
+	for rows.Next() {
+		comment := model.ResponseComment{}
+		err = commentRepo.db.ScanRows(rows, &comment)
+		if err == nil {
+			comments = append(comments, comment)
+		}
+	}
+
+	// レコードがない場合
 	if len(comments) == 0 {
-		return []model.Comment{}, errors.New("record not found")
+		return []model.ResponseComment{}, errors.New("record not found")
 	}
 
 	return

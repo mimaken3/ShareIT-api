@@ -33,7 +33,7 @@ func FindAllComment() echo.HandlerFunc {
 		_articleID, _ := strconv.Atoi(c.Param("article_id"))
 		articleID := uint(_articleID)
 
-		var comments []model.Comment
+		var comments []model.ResponseComment
 		comments, err := commentService.FindAllComments(articleID)
 
 		if err != nil {
