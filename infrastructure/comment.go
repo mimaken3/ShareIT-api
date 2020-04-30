@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -54,9 +55,15 @@ func (commentRepo *commentInfraStruct) CreateComment(createComment model.Comment
 }
 
 // 記事のコメント一覧取得
-// func (commentRepo *commentInfraStruct) FindAllComment(articleID uint) (comment []model.Comment, err error) {
-// 	return
-// }
+func (commentRepo *commentInfraStruct) FindAllComments(articleID uint) (comments []model.Comment, err error) {
+	// SELECT * FROM comments WHERE is_deleted = 0 AND article_id = ?;
+	commentRepo.db.Where("is_deleted = 0 AND article_id = ?", articleID).Find(&comments)
+	if len(comments) == 0 {
+		return []model.Comment{}, errors.New("record not found")
+	}
+
+	return
+}
 
 // コメントを編集
 // func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment) (updatedComment model.Comment, err error) {

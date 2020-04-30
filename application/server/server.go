@@ -97,7 +97,7 @@ func InitRouting(e *echo.Echo) {
 	commentG.POST("", handler.CreateComment())
 
 	// 記事のコメント一覧取得
-	// commentG.GET("", handler.FindAllComment())
+	commentG.GET("", handler.FindAllComment())
 
 	// コメントを編集
 	// commentG.PUT("", hander.UpdateComment())

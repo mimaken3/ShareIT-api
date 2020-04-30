@@ -11,7 +11,7 @@ type CommentRepository interface {
 	CreateComment(createComment model.Comment, lastCommentID uint) (createdComment model.Comment, err error)
 
 	// 記事のコメント一覧取得
-	// FindAllComment(articleID uint)(comment []model.Comment, err error)
+	FindAllComments(articleID uint) (comments []model.Comment, err error)
 
 	// コメントを編集
 	// UpdateComment(updateComment model.Comment) (updatedComment model.Comment, err error)
