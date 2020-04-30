@@ -15,7 +15,7 @@ type LikeServiceInterface interface {
 	GetLikeInfoByArtiles(userID uint, articles []model.Article) (updatedArticles []model.Article, err error)
 
 	// いいねON/OFF
-	// ToggleLikeByArticle(userID uint, isLiked bool, article model.Article) (isLike bool, likeNum int, err error)
+	ToggleLikeByArticle(userID uint, articleID uint, isLiked bool) (err error)
 }
 
 // DIのための関数

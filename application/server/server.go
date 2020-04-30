@@ -84,6 +84,9 @@ func InitRouting(e *echo.Echo) {
 	// 特定のトピックを含む記事を取得
 	articleG.GET("/topic/:topic_id", handler.FindArticlesByTopicId())
 
+	// 記事のいいね
+	articleG.POST("/:article_id/like", handler.ToggleLikeByArticle())
+
 	// =============
 	// || トピック||
 	// =============

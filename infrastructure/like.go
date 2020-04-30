@@ -37,3 +37,35 @@ func (likeRepo *likeInfraStruct) GetLikeInfoByArtiles(userID uint, articles []mo
 
 	return
 }
+
+// 最後のいいねIDを取得
+func (likeRepo *likeInfraStruct) GetLastLikeID() (lastLikeID uint, err error) {
+	like := model.Like{}
+	// SELECT like_id FROM likes ORDER BY like_id DESC LIMIT 1;
+	if result := likeRepo.db.Select("like_id").Last(&like); result.Error != nil {
+		// レコードがない場合
+		return 0, nil
+	}
+
+	lastLikeID = like.LikeID
+	return
+}
+
+// いいねを追加
+func (likeRepo *likeInfraStruct) AddLike(userID uint, articleID uint, lastLikeID uint) (err error) {
+	var like model.Like
+	like.LikeID = lastLikeID + 1
+	like.UserID = userID
+	like.ArticleID = articleID
+
+	likeRepo.db.Create(&like)
+
+	return
+}
+
+// いいねを外す
+func (likeRepo *likeInfraStruct) DeleteLike(userID uint, articleID uint) (err error) {
+	like := model.Like{}
+	likeRepo.db.Where("user_id = ? AND article_id = ?", userID, articleID).Delete(&like)
+	return
+}
