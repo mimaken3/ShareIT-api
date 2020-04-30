@@ -85,3 +85,18 @@ CREATE TABLE likes(
   user_id INT UNSIGNED NOT NULL,
   article_Id INT UNSIGNED NOT NULL
 );
+
+-- コメント
+DROP TABLE IF EXISTS comments;
+
+CREATE TABLE comments(
+  comment_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  article_Id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  content VARCHAR(1000) NOT NULL,
+  created_date DATETIME NOT NULL,
+  updated_date DATETIME NOT NULL,
+  deleted_date DATETIME NOT NULL, 
+  is_deleted TINYINT(1) NOT NULL DEFAULT '0'
+);
+
