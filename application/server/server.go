@@ -90,20 +90,18 @@ func InitRouting(e *echo.Echo) {
 	// =============
 	// || コメント||
 	// =============
-	_articleG := articleG.Group("/:article_id")
-	commentG := _articleG.Group("/comments")
 
 	// コメント作成
-	commentG.POST("", handler.CreateComment())
+	articleG.POST("/:article_id/comments", handler.CreateComment())
 
 	// 記事のコメント一覧取得
-	commentG.GET("", handler.FindAllComment())
+	articleG.GET("/:article_id/comments", handler.FindAllComment())
 
 	// コメントを編集
-	commentG.PUT("", handler.UpdateComment())
+	articleG.PUT("/:article_id/comments", handler.UpdateComment())
 
 	// コメントを削除
-	commentG.DELETE("/:comment_id", handler.DeleteComment())
+	articleG.DELETE("/:article_id/comments", handler.DeleteComment())
 
 	// =============
 	// || トピック||
