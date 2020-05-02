@@ -4,7 +4,7 @@ import "time"
 
 type ResponseComment struct {
 	CommentID   uint      `gorm:"primary_key" json:"comment_id"`
-	ArticleID   uint      `json:"article_Id"`
+	ArticleID   uint      `json:"article_id"`
 	UserID      uint      `json:"user_id"`
 	UserName    string    `gorm:"size:255" json:"user_name"`
 	IconName    string    `gorm:"size:255" json:"icon_name"`
