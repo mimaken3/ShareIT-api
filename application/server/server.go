@@ -101,7 +101,7 @@ func InitRouting(e *echo.Echo) {
 	articleG.PUT("/:article_id/comments", handler.UpdateComment())
 
 	// コメントを削除
-	articleG.DELETE("/:article_id/comments", handler.DeleteComment())
+	articleG.DELETE("/:article_id/comments/:comment_id", handler.DeleteComment())
 
 	// =============
 	// || トピック||
