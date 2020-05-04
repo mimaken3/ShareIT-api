@@ -222,24 +222,13 @@ func UpdateUserByUserId() echo.HandlerFunc {
 // ユーザを削除
 func DeleteUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
-		willBeDeletedUser := model.User{}
-
-		if err := c.Bind(&willBeDeletedUser); err != nil {
-			return err
-		}
-
 		// ユーザIDを取得
-		userID, _ := strconv.Atoi(c.Param("user_id"))
-
-		// パラメータのIDと受け取ったモデルのIDが違う場合、エラーを返す
-		if uint(userID) != willBeDeletedUser.UserID {
-			return c.String(http.StatusBadRequest, "param userID and send user id are different")
-		}
+		_userID, _ := strconv.Atoi(c.Param("user_id"))
+		userID := uint(_userID)
 
 		// TODO: err処理
 		// ユーザを削除
-		_ = userService.DeleteUser(willBeDeletedUser.UserID)
+		_ = userService.DeleteUser(userID)
 
 		// プロフィールを削除
 		_ = profileService.DeleteProfileByUserID(uint(userID))

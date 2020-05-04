@@ -199,6 +199,8 @@ from
   ) as dd on (dd.user_id = u.user_id) 
 where 
   u.user_name = ? 
+	AND u.is_deleted = 0
+	;
 	`, user.UserName).Scan(&resultUser)
 
 	if result.Error != nil {
@@ -260,7 +262,9 @@ from
       td.user_id
   ) as dd on (dd.user_id = u.user_id) 
 where 
-  u.user_id = ?;
+  u.user_id = ?
+  AND u.is_deleted = 0
+;
 `, userId).Scan(&user)
 
 	if result.Error != nil {
