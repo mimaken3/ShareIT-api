@@ -88,6 +88,22 @@ func InitRouting(e *echo.Echo) {
 	articleG.PUT("/:article_id/like", handler.ToggleLikeByArticle())
 
 	// =============
+	// || コメント||
+	// =============
+
+	// コメント作成
+	articleG.POST("/:article_id/comments", handler.CreateComment())
+
+	// 記事のコメント一覧取得
+	articleG.GET("/:article_id/comments", handler.FindAllComment())
+
+	// コメントを編集
+	articleG.PUT("/:article_id/comments", handler.UpdateComment())
+
+	// コメントを削除
+	articleG.DELETE("/:article_id/comments/:comment_id", handler.DeleteComment())
+
+	// =============
 	// || トピック||
 	// =============
 	topicG := apiG.Group("/topics")

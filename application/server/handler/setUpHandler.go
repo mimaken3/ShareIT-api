@@ -13,6 +13,7 @@ var userInterestedTopicService service.UserInterestedTopicServiceInterface
 var profileService service.ProfileServiceInterface
 var iconService service.IconServiceInterface
 var likeService service.LikeServiceInterface
+var commentService service.CommentServiceInterface
 
 func DI() {
 	// ユーザ
@@ -50,4 +51,8 @@ func DI() {
 	// いいね
 	likeRepo := infrastructure.NewLikeDB(infrastructure.DB)
 	likeService = service.NewLikeService(likeRepo)
+
+	// コメント
+	commentRepo := infrastructure.NewCommentDB(infrastructure.DB)
+	commentService = service.NewCommentService(commentRepo)
 }
