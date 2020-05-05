@@ -154,7 +154,7 @@ func Login() echo.HandlerFunc {
 		api.Token = ""
 		api.Code = 500
 		api.Message = message
-		api.User = resultUser
+		api.User = user
 
 		return c.JSON(http.StatusBadRequest, api)
 	}
