@@ -263,6 +263,15 @@ func DeleteUser() echo.HandlerFunc {
 		// プロフィールを削除
 		_ = profileService.DeleteProfileByUserID(uint(userID))
 
+		// ユーザの記事を全削除
+		_ = articleService.DeleteArticleByUserID(userID)
+
+		// ユーザのコメントを全削除
+		_ = commentService.DeleteCommentByUserID(userID)
+
+		// ユーザが付けたいいねを全削除
+		_ = likeService.DeleteLikeByUserID(userID)
+
 		return c.String(http.StatusOK, "delete success")
 	}
 }

@@ -671,3 +671,23 @@ func (articleRepo *articleInfraStruct) DeleteArticleByArticleId(articleId uint) 
 
 	return nil
 }
+
+// ユーザの記事を全削除
+func (articleRepo *articleInfraStruct) DeleteArticleByUserID(userID uint) (err error) {
+	deleteArticle := []model.Article{}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	deleteTime := time.Now().Format(dateFormat)
+	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+
+	// 削除状態に更新
+	articleRepo.db.Model(&deleteArticle).
+		Where("created_user_id = ? AND is_deleted = ?", userID, 0).
+		Updates(map[string]interface{}{
+			"deleted_date": customisedDeleteTime,
+			"is_deleted":   int8(1),
+		})
+
+	return nil
+}

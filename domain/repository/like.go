@@ -18,4 +18,7 @@ type LikeRepository interface {
 
 	// 記事のいいねを削除
 	DeleteLikeByArticleID(articleID uint) (err error)
+
+	// ユーザが付けたいいねを全削除
+	DeleteLikeByUserID(userID uint) (err error)
 }

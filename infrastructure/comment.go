@@ -215,3 +215,23 @@ func (commentRepo *commentInfraStruct) DeleteCommentByArticleID(articleID uint) 
 
 	return nil
 }
+
+// ユーザのコメントを全削除
+func (commentRepo *commentInfraStruct) DeleteCommentByUserID(userID uint) (err error) {
+	deleteComment := []model.Comment{}
+
+	// 現在の日付を取得
+	const dateFormat = "2006-01-02 15:04:05"
+	deleteTime := time.Now().Format(dateFormat)
+	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+
+	// 削除状態に更新
+	commentRepo.db.Model(&deleteComment).
+		Where("user_id = ? AND is_deleted = ?", userID, 0).
+		Updates(map[string]interface{}{
+			"deleted_date": customisedDeleteTime,
+			"is_deleted":   int8(1),
+		})
+
+	return nil
+}
