@@ -69,3 +69,23 @@ func (likeRepo *likeInfraStruct) DeleteLike(userID uint, articleID uint) (err er
 	likeRepo.db.Where("user_id = ? AND article_id = ?", userID, articleID).Delete(&like)
 	return
 }
+
+// 記事のいいねを削除
+func (likeRepo *likeInfraStruct) DeleteLikeByArticleID(articleID uint) (err error) {
+	deleteLike := []model.Like{}
+
+	// 物理削除
+	likeRepo.db.Where("article_id = ?", articleID).Delete(&deleteLike)
+
+	return nil
+}
+
+// ユーザが付けたいいねを全削除
+func (likeRepo *likeInfraStruct) DeleteLikeByUserID(userID uint) (err error) {
+	deleteLike := []model.Like{}
+
+	// 物理削除
+	likeRepo.db.Where("user_id = ?", userID).Delete(&deleteLike)
+
+	return nil
+}

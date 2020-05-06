@@ -194,21 +194,14 @@ func DeleteArticleByArticleId() echo.HandlerFunc {
 		// intをuintに変換
 		var uintArticleId uint = uint(articleId)
 
+		// 記事を削除
 		err := articleService.DeleteArticleByArticleId(uintArticleId)
 
-		// TODO: 記事トピックは削除しない？
-		// if err == nil {
-		// 	// 記事トピックを削除
-		// 	willBeDeletedArticle := model.Article{ArticleID: uintArticleId}
-		// 	articleTopicService.DeleteArticleTopic(willBeDeletedArticle)
-		// 	// TODO: 記事トピック削除が失敗したらエラーを返す
-		//
-		// 	// 削除に成功したら
-		// 	return c.String(http.StatusOK, "Successfully deleted article")
-		// } else {
-		// 	// 削除に失敗したら
-		// 	return c.String(http.StatusBadRequest, err.Error())
-		// }
+		// 記事のコメントを全削除
+		err = commentService.DeleteCommentByArticleID(uintArticleId)
+
+		// 記事のいいねを削除
+		err = likeService.DeleteLikeByArticleID(uintArticleId)
 
 		if err == nil {
 			// 削除に成功したら

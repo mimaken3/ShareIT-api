@@ -18,4 +18,10 @@ type CommentRepository interface {
 
 	// コメントを削除
 	DeleteComment(commentID uint) (err error)
+
+	// 記事のコメントを全削除
+	DeleteCommentByArticleID(articleID uint) (err error)
+
+	// ユーザのコメントを全削除
+	DeleteCommentByUserID(userID uint) (err error)
 }

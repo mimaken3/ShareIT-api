@@ -36,4 +36,7 @@ type ArticleRepository interface {
 
 	// 記事を削除
 	DeleteArticleByArticleId(articleId uint) (err error)
+
+	// ユーザの記事を全削除
+	DeleteArticleByUserID(userID uint) (err error)
 }
