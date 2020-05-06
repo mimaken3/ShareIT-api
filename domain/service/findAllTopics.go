@@ -19,7 +19,7 @@ func (t *topicServiceStruct) FindAllTopics() (topics []model.Topic, err error) {
 		// 「その他」を一番最後に移動する
 		topic := model.Topic{}
 		topic = topics[0]
-		topics = unset(topics, 0)
+		topics = UnsetTopics(topics, 0)
 
 		// クイックソートで並び替え
 		sort.Slice(topics, func(i, j int) bool {
@@ -33,18 +33,4 @@ func (t *topicServiceStruct) FindAllTopics() (topics []model.Topic, err error) {
 	}
 
 	return
-}
-
-// スライスからn番目の要素を削除
-func unset(s []model.Topic, i int) []model.Topic {
-	// [:i] インデックi以前
-	// [i+1:] インデックスi+1以降
-	// ... s[:i]とs[i+1:]を組み合わせる
-	s = append(s[:i], s[i+1:]...)
-
-	//新しいスライスを用意
-	n := make([]model.Topic, len(s))
-	copy(n, s)
-
-	return n
 }

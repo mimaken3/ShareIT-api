@@ -105,6 +105,16 @@ limit 10 offset ?
 	return
 }
 
+// 全ユーザを取得(セレクトボックス)
+func (userRepo *userInfraStruct) FindAllUsersForSelectBox() (users []model.User, err error) {
+	if result := userRepo.db.Select("user_id, user_name").Where("is_deleted = 0").Find(&users); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
+	return
+}
+
 // ユーザ登録のチェック
 func (userRepo *userInfraStruct) CheckUserInfo(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error) {
 

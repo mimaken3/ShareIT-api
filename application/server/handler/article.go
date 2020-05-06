@@ -40,6 +40,7 @@ func FindAllArticles() echo.HandlerFunc {
 		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
 
 		if err != nil {
+			// １つもなかった場合
 			articlesResult.IsEmpty = true
 			articlesResult.AllPagingNum = allPagingNum
 			articlesResult.Articles = articles
@@ -56,6 +57,44 @@ func FindAllArticles() echo.HandlerFunc {
 		articlesResult.Articles = updatedArticles
 
 		return c.JSON(http.StatusOK, articlesResult)
+	}
+}
+
+// 記事を検索
+func SearchAllArticles() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// ユーザIDを取得
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		userID := uint(intUserID)
+
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		// トピックを取得
+		topicIDStr := c.QueryParam("topic_id")
+
+		var articlesResult ArticlesResult
+		searchedArticles, allPagingNum, err := articleService.SearchAllArticles(refPg, userID, topicIDStr)
+
+		if err != nil {
+			// １つもなかった場合
+			articlesResult.IsEmpty = true
+			articlesResult.AllPagingNum = allPagingNum
+			articlesResult.Articles = searchedArticles
+
+			return c.JSON(http.StatusOK, articlesResult)
+		}
+
+		// 各記事にいいね情報を付与
+		articles, err := likeService.GetLikeInfoByArtiles(userID, searchedArticles)
+
+		articlesResult.IsEmpty = false
+		articlesResult.RefPg = refPg
+		articlesResult.AllPagingNum = allPagingNum
+		articlesResult.Articles = articles
+
+		return c.JSON(http.StatusOK, articlesResult)
+
 	}
 }
 
