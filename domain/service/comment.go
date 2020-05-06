@@ -22,6 +22,9 @@ type CommentServiceInterface interface {
 
 	// コメントを削除
 	DeleteComment(commentID uint) (err error)
+
+	// 記事のコメントを全削除
+	DeleteCommentByArticleID(articleID uint) (err error)
 }
 
 // DIのための関数

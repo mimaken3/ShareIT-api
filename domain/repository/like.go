@@ -15,4 +15,7 @@ type LikeRepository interface {
 
 	// 各記事のいいね情報を取得
 	GetLikeInfoByArtiles(userID uint, articles []model.Article) (isLiked []bool, likeNum []int, err error)
+
+	// 記事のいいねを削除
+	DeleteLikeByArticleID(articleID uint) (err error)
 }

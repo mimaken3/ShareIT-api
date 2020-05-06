@@ -16,6 +16,9 @@ type LikeServiceInterface interface {
 
 	// いいねON/OFF
 	ToggleLikeByArticle(userID uint, articleID uint, isLiked bool) (err error)
+
+	// 記事のいいねを削除
+	DeleteLikeByArticleID(articleID uint) (err error)
 }
 
 // DIのための関数
