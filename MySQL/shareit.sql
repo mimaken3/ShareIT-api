@@ -83,7 +83,7 @@ DROP TABLE IF EXISTS likes;
 CREATE TABLE likes(
   like_id INT UNSIGNED NOT NULL PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL,
-  article_Id INT UNSIGNED NOT NULL
+  article_id INT UNSIGNED NOT NULL
 );
 
 -- コメント
@@ -91,7 +91,7 @@ DROP TABLE IF EXISTS comments;
 
 CREATE TABLE comments(
   comment_id INT UNSIGNED NOT NULL PRIMARY KEY,
-  article_Id INT UNSIGNED NOT NULL,
+  article_id INT UNSIGNED NOT NULL,
   user_id INT UNSIGNED NOT NULL,
   content VARCHAR(1000) NOT NULL,
   created_date DATETIME NOT NULL,
