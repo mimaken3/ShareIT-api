@@ -10,6 +10,9 @@ import (
 )
 
 type ArticlesResult struct {
+	IsSearched   bool            `json:"is_searched"`
+	SearchUser   uint            `json:"search_user"`
+	SearchTopics string          `json:"search_topics"`
 	IsEmpty      bool            `json:"is_empty"`
 	RefPg        int             `json:"ref_pg"`
 	AllPagingNum int             `json:"all_paging_num"`
@@ -40,6 +43,10 @@ func FindAllArticles() echo.HandlerFunc {
 		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
 
 		if err != nil {
+			// １つもなかった場合
+			articlesResult.IsSearched = false
+			articlesResult.SearchUser = 0
+			articlesResult.SearchTopics = "0"
 			articlesResult.IsEmpty = true
 			articlesResult.AllPagingNum = allPagingNum
 			articlesResult.Articles = articles
@@ -50,12 +57,59 @@ func FindAllArticles() echo.HandlerFunc {
 		// 各記事にいいね情報を付与
 		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, articles)
 
+		articlesResult.IsSearched = false
+		articlesResult.SearchUser = 0
+		articlesResult.SearchTopics = "0"
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
 		articlesResult.Articles = updatedArticles
 
 		return c.JSON(http.StatusOK, articlesResult)
+	}
+}
+
+// 記事を検索
+func SearchAllArticles() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// ユーザIDを取得
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		userID := uint(intUserID)
+
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		// トピックを取得
+		topicIDStr := c.QueryParam("topic_id")
+
+		var articlesResult ArticlesResult
+		searchedArticles, allPagingNum, err := articleService.SearchAllArticles(refPg, userID, topicIDStr)
+
+		if err != nil {
+			// １つもなかった場合
+			articlesResult.IsSearched = true
+			articlesResult.SearchUser = userID
+			articlesResult.SearchTopics = topicIDStr
+			articlesResult.IsEmpty = true
+			articlesResult.AllPagingNum = allPagingNum
+			articlesResult.Articles = searchedArticles
+
+			return c.JSON(http.StatusOK, articlesResult)
+		}
+
+		// 各記事にいいね情報を付与
+		articles, err := likeService.GetLikeInfoByArtiles(userID, searchedArticles)
+
+		articlesResult.IsSearched = true
+		articlesResult.SearchUser = userID
+		articlesResult.SearchTopics = topicIDStr
+		articlesResult.IsEmpty = false
+		articlesResult.RefPg = refPg
+		articlesResult.AllPagingNum = allPagingNum
+		articlesResult.Articles = articles
+
+		return c.JSON(http.StatusOK, articlesResult)
+
 	}
 }
 
@@ -224,6 +278,9 @@ func FindArticlesByUserId() echo.HandlerFunc {
 
 		articles, allPagingNum, err := articleService.FindArticlesByUserIdService(uintUserID, refPg)
 		if err != nil {
+			articlesResult.IsSearched = false
+			articlesResult.SearchUser = tryToGetUserID
+			articlesResult.SearchTopics = "0"
 			articlesResult.IsEmpty = true
 			articlesResult.AllPagingNum = allPagingNum
 			articlesResult.Articles = articles
@@ -234,6 +291,9 @@ func FindArticlesByUserId() echo.HandlerFunc {
 		// 各記事にいいね情報を付与
 		updatedArticles, err := likeService.GetLikeInfoByArtiles(tryToGetUserID, articles)
 
+		articlesResult.IsSearched = false
+		articlesResult.SearchUser = tryToGetUserID
+		articlesResult.SearchTopics = "0"
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum
@@ -257,7 +317,8 @@ func FindArticlesByTopicId() echo.HandlerFunc {
 		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
 		loginUserID := uint(intUserID)
 
-		topicID, _ := strconv.Atoi(c.Param("topic_id"))
+		_topicID := c.Param("topic_id")
+		topicID, _ := strconv.Atoi(_topicID)
 		var uintTopicID uint = uint(topicID)
 
 		// 指定したトピックを含む記事のIDを取得
@@ -268,6 +329,9 @@ func FindArticlesByTopicId() echo.HandlerFunc {
 
 		articles, allPagingNum, err := articleService.FindArticlesByTopicIdService(articleIds, loginUserID, refPg)
 		if err != nil {
+			articlesResult.IsSearched = false
+			articlesResult.SearchUser = 0
+			articlesResult.SearchTopics = _topicID
 			articlesResult.IsEmpty = true
 			articlesResult.AllPagingNum = allPagingNum
 			articlesResult.Articles = articles
@@ -278,6 +342,9 @@ func FindArticlesByTopicId() echo.HandlerFunc {
 		// 各記事にいいね情報を付与
 		updatedArticles, err := likeService.GetLikeInfoByArtiles(loginUserID, articles)
 
+		articlesResult.IsSearched = false
+		articlesResult.SearchUser = 0
+		articlesResult.SearchTopics = _topicID
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
 		articlesResult.AllPagingNum = allPagingNum

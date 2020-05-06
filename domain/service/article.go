@@ -20,6 +20,9 @@ type ArticleServiceInterface interface {
 	// 全記事を取得(ページング)
 	FindAllArticlesService(refPg int) (articles []model.Article, allPagingNum int, err error)
 
+	// 記事を検索(ページング)
+	SearchAllArticles(refPg int, userID uint, topicIDStr string) (searchedArticles []model.Article, allPagingNum int, err error)
+
 	// 記事を更新
 	UpdateArticleByArticleId(willBeUpdatedArticle model.Article) (updatedArticle model.Article, err error)
 

@@ -40,6 +40,9 @@ func InitRouting(e *echo.Echo) {
 	// 全ユーザを取得(ページング)
 	userG.GET("", handler.FindAllUsers())
 
+	// 全ユーザを取得(セレクトボックス)
+	userG.GET("/selectBox/:user_id", handler.FindAllUsersForSelectBox())
+
 	// 最後のユーザIDを取得
 	userG.GET("/lastUserId", handler.FindLastUserId())
 
@@ -65,6 +68,9 @@ func InitRouting(e *echo.Echo) {
 
 	// 全記事を取得(ページング)(トピック: 文字列区切り)
 	articleG.GET("", handler.FindAllArticles())
+
+	// 記事を検索
+	articleG.GET("/search", handler.SearchAllArticles())
 
 	// 記事を取得(トピック: 文字列区切り)
 	articleG.GET("/:article_id", handler.FindArticleByArticleId())

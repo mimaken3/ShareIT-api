@@ -55,6 +55,36 @@ func FindAllUsers() echo.HandlerFunc {
 	}
 }
 
+// 全ユーザを取得(セレクトボックス)
+func FindAllUsersForSelectBox() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// ユーザIDを取得
+		_userID, _ := strconv.Atoi(c.Param("user_id"))
+		userID := uint(_userID)
+		users, err := userService.FindAllUsersForSelectBox(userID)
+
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
+		var usersResult UsersResult
+		if err != nil {
+			usersResult.IsEmpty = true
+			usersResult.AllPagingNum = 0
+			usersResult.Users = users
+
+			return c.JSON(http.StatusOK, usersResult)
+		}
+
+		usersResult.IsEmpty = false
+		usersResult.RefPg = 0
+		usersResult.AllPagingNum = 0
+		usersResult.Users = users
+
+		return c.JSON(http.StatusOK, usersResult)
+	}
+}
+
 // ユーザ登録のチェック
 func CheckUserInfo() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -154,7 +184,7 @@ func Login() echo.HandlerFunc {
 		api.Token = ""
 		api.Code = 500
 		api.Message = message
-		api.User = resultUser
+		api.User = user
 
 		return c.JSON(http.StatusBadRequest, api)
 	}

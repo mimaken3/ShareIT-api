@@ -40,7 +40,7 @@ func (articleRepo *articleInfraStruct) FindAllArticles(refPg int) (articles []mo
 	rows, err :=
 		articleRepo.db.Raw(
 			`
-			select * from(
+select * from(
 select 
   a.article_id, 
   a.article_title, 
@@ -95,6 +95,196 @@ group by
 	allPagingNum = (count / 11) + 1
 
 	return
+}
+
+// 記事を検索(ページング)
+func (articleRepo *articleInfraStruct) SearchAllArticles(refPg int, userID uint, topicIDs []uint) (searchedArticles []model.Article, allPagingNum int, err error) {
+	offset := (refPg - 1) * 10
+
+	if userID == 0 && topicIDs[0] != 0 {
+		// 「全ユーザ」かつ「特定トピック」の場合
+		rows, err :=
+			articleRepo.db.Raw(`
+select 
+  * 
+from 
+  (
+    select 
+      a.article_id, 
+      a.article_title, 
+      a.article_content, 
+      group_concat(
+        att.topic_name 
+        order by 
+          att.article_topic_id separator '/'
+      ) as article_topics, 
+      a.created_user_id, 
+      a.created_date, 
+      a.updated_date, 
+      a.deleted_date 
+    from 
+      (
+        select 
+          * 
+        from 
+          articles 
+        where 
+          article_id in (
+            select 
+              article_id 
+            from 
+              article_topics 
+            where 
+              topic_id in (?)
+          )
+      ) as a, 
+      (
+        select 
+          at.article_topic_id, 
+          at.article_id, 
+          t.topic_name 
+        from 
+          article_topics as at 
+          left join topics as t on at.topic_id = t.topic_id
+      ) as att 
+    where 
+      a.article_id = att.article_id 
+      and is_deleted = 0 
+    group by 
+      a.article_id
+  ) as tt 
+limit 
+  10 offset ?
+;	
+		`, topicIDs, offset).Rows()
+		defer rows.Close()
+		for rows.Next() {
+			article := model.Article{}
+			err = articleRepo.db.ScanRows(rows, &article)
+			if err == nil {
+				searchedArticles = append(searchedArticles, article)
+			}
+		}
+
+		// レコードがない場合
+		if len(searchedArticles) == 0 {
+			return nil, 1, errors.New("record not found")
+		}
+
+		var count int
+		row := articleRepo.db.Raw(`
+select 
+  count(*) 
+from 
+  articles 
+where 
+  is_deleted = 0 
+  and article_id in (
+    select 
+      article_id 
+    from 
+      article_topics 
+    where 
+      topic_id in (?)
+  );
+	`, topicIDs).Row()
+		row.Scan(&count)
+		allPagingNum = (count / 11) + 1
+
+		return searchedArticles, allPagingNum, nil
+	}
+	// 「特定のユーザ」かつ「特定のトピック」の場合
+	rows, err :=
+		articleRepo.db.Raw(`
+select 
+  * 
+from 
+  (
+    select 
+      a.article_id, 
+      a.article_title, 
+      a.article_content, 
+      group_concat(
+        att.topic_name 
+        order by 
+          att.article_topic_id separator '/'
+      ) as article_topics, 
+      a.created_user_id, 
+      a.created_date, 
+      a.updated_date, 
+      a.deleted_date 
+    from 
+      (
+        select 
+          * 
+        from 
+          articles 
+        where 
+          article_id in (
+            select 
+              article_id 
+            from 
+              article_topics 
+            where 
+              topic_id in (?)
+							and created_user_id = ?
+          )
+      ) as a, 
+      (
+        select 
+          at.article_topic_id, 
+          at.article_id, 
+          t.topic_name 
+        from 
+          article_topics as at 
+          left join topics as t on at.topic_id = t.topic_id
+      ) as att 
+    where 
+      a.article_id = att.article_id 
+      and is_deleted = 0 
+    group by 
+      a.article_id
+  ) as tt 
+limit 
+  10 offset ?
+;	
+		`, topicIDs, userID, offset).Rows()
+	defer rows.Close()
+	for rows.Next() {
+		article := model.Article{}
+		err = articleRepo.db.ScanRows(rows, &article)
+		if err == nil {
+			searchedArticles = append(searchedArticles, article)
+		}
+	}
+
+	// レコードがない場合
+	if len(searchedArticles) == 0 {
+		return nil, 1, errors.New("record not found")
+	}
+
+	var count int
+	row := articleRepo.db.Raw(`
+select 
+  count(*) 
+from 
+  articles 
+where 
+  is_deleted = 0 
+	and created_user_id = ?
+  and article_id in (
+    select 
+      article_id 
+    from 
+      article_topics 
+    where 
+      topic_id in (?)
+  );
+	`, userID, topicIDs).Row()
+	row.Scan(&count)
+	allPagingNum = (count / 11) + 1
+
+	return searchedArticles, allPagingNum, nil
 }
 
 // 記事を取得
