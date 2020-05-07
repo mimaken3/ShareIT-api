@@ -27,6 +27,7 @@ type CreateArticle struct {
 	CreatedDate    time.Time `json:"created_date"`
 	UpdatedDate    time.Time `json:"updated_date"`
 	DeletedDate    time.Time `json:"deleted_date"`
+	IsPrivate      int8      `json:"is_private"`
 	IsDeleted      int8      `json:"-"`
 }
 
@@ -351,6 +352,7 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	ar.CreatedDate = customisedNowTime
 	ar.UpdatedDate = customisedNowTime
 	ar.DeletedDate = defaultDeletedDate
+	ar.IsPrivate = createArticle.IsPrivate
 
 	articleRepo.db.Create(&ar)
 
@@ -363,6 +365,7 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	createdArticle.CreatedDate = customisedNowTime
 	createdArticle.UpdatedDate = customisedNowTime
 	createdArticle.DeletedDate = defaultDeletedDate
+	createdArticle.IsPrivate = createArticle.IsPrivate
 
 	return
 }
@@ -379,6 +382,7 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 	// 更新するフィールドを設定
 	updateTitle := willBeUpdatedArticle.ArticleTitle
 	updateContent := willBeUpdatedArticle.ArticleContent
+	updateIsPrivate := willBeUpdatedArticle.IsPrivate
 
 	// 更新
 	articleRepo.db.Model(&updatedArticle).
@@ -387,6 +391,7 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 			"article_title":   updateTitle,
 			"article_content": updateContent,
 			"updated_date":    customisedUpdateTime,
+			"is_private":      updateIsPrivate,
 		})
 
 	// 興味トピックを文字列で,区切りで取得
@@ -430,6 +435,7 @@ group by
 	updatedArticle.CreatedUserID = willBeUpdatedArticle.CreatedUserID
 	updatedArticle.CreatedDate = willBeUpdatedArticle.CreatedDate
 	updatedArticle.DeletedDate = willBeUpdatedArticle.DeletedDate
+	updatedArticle.IsPrivate = willBeUpdatedArticle.IsPrivate
 
 	return
 }
