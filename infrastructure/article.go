@@ -36,12 +36,11 @@ func (CreateArticle) TableName() string {
 }
 
 // 全記事を取得(ページング)
-func (articleRepo *articleInfraStruct) FindAllArticles(refPg int) (articles []model.Article, allPagingNum int, err error) {
+func (articleRepo *articleInfraStruct) FindAllArticles(refPg int, userID uint) (articles []model.Article, allPagingNum int, err error) {
 	offset := (refPg - 1) * 10
 	rows, err :=
 		articleRepo.db.Raw(
 			`
-select * from(
 select 
   a.article_id, 
   a.article_title, 
@@ -49,33 +48,46 @@ select
   group_concat(
     att.topic_name 
     order by 
-      att.article_topic_id
-			 separator '/'
+      att.article_topic_id separator '/'
   ) as article_topics, 
   a.created_user_id, 
   a.created_date, 
   a.updated_date, 
   a.deleted_date 
 from 
-  articles as a, 
   (
-  select 
-  at.article_topic_id,
-  at.article_id,
-  t.topic_name
-from 
-  article_topics as at 
-  left join topics as t on at.topic_id = t.topic_id
+    select 
+      sub_a2.* 
+    from 
+      articles as sub_a2
+      inner join (
+        select 
+          case 
+          when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          when is_private = 0 and is_deleted = 0 then article_id end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null 
+        limit 
+          10 offset ?
+      ) as sub_a on sub_a2.article_id = sub_a.article_id
+  ) as a, -- ユーザの公開/非公開を考慮したarticlesの10件
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
   ) as att 
 where 
   a.article_id = att.article_id 
-  and is_deleted = 0 
 group by 
   a.article_id
-  ) as tt
-  limit 10 offset ? 
-  ;
-`, offset).Rows()
+;
+`, userID, offset).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
@@ -92,7 +104,23 @@ group by
 	}
 
 	var count int
-	articleRepo.db.Table("articles").Where("is_deleted = 0").Count(&count)
+	row := articleRepo.db.Raw(`
+select 
+  count(*) 
+from 
+  (
+    select 
+      case 
+      when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+      when is_private = 0 and is_deleted = 0 then article_id 
+      end as article_id 
+    from 
+      articles 
+    having 
+      article_id is not null
+  ) as t;
+	`, userID).Row()
+	row.Scan(&count)
 	allPagingNum = (count / 11) + 1
 
 	return

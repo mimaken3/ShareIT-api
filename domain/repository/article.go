@@ -11,7 +11,7 @@ type ArticleRepository interface {
 	FindArticleByArticleId(articleId uint) (article model.Article, err error)
 
 	// 全記事を取得(ページング)
-	FindAllArticles(refPg int) (articles []model.Article, allPagingNum int, err error)
+	FindAllArticles(refPg int, userID uint) (articles []model.Article, allPagingNum int, err error)
 
 	// 記事を検索(ページング)
 	SearchAllArticles(refPg int, userID uint, topicIDs []uint) (searchedArticles []model.Article, allPagingNum int, err error)

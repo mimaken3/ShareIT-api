@@ -20,7 +20,7 @@ func (a *articleServiceStruct) SearchAllArticles(refPg int, userID uint, topicID
 
 	if userID == 0 && topicIDs[0] == 0 {
 		//「全ユーザ」かつ「トピックの選択なし」の場合
-		searchedArticles, allPagingNum, err = a.articleRepo.FindAllArticles(refPg)
+		searchedArticles, allPagingNum, err = a.articleRepo.FindAllArticles(refPg, userID)
 		return
 	} else if userID != 0 && topicIDs[0] == 0 {
 		// 「特定のユーザ」かつ「全トピック」の場合

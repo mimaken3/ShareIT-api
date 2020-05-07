@@ -40,7 +40,7 @@ func FindAllArticles() echo.HandlerFunc {
 		}
 
 		var articlesResult ArticlesResult
-		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
+		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg, userID)
 
 		if err != nil {
 			// １つもなかった場合
