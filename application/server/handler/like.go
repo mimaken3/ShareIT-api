@@ -32,7 +32,7 @@ func ToggleLikeByArticle() echo.HandlerFunc {
 		// いいねをトグルした後の記事を取得
 		_ = likeService.ToggleLikeByArticle(userID, articleID, isLiked)
 
-		article, err := articleService.FindArticleByArticleId(articleID)
+		article, err := articleService.FindArticleByArticleId(userID, articleID)
 		if err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}

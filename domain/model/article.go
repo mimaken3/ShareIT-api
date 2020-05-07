@@ -13,5 +13,6 @@ type Article struct {
 	CreatedDate    time.Time `json:"created_date"`
 	UpdatedDate    time.Time `json:"updated_date"`
 	DeletedDate    time.Time `json:"deleted_date"`
+	IsPrivate      int8      `json:"is_private"`
 	IsDeleted      int8      `json:"-"`
 }

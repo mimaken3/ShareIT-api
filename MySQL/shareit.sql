@@ -36,6 +36,7 @@ create table articles(
   created_date DATETIME NOT NULL,
   updated_date DATETIME NOT NULL,
   deleted_date DATETIME NOT NULL, 
+  is_private TINYINT(1) NOT NULL
   is_deleted TINYINT(1) NOT NULL DEFAULT '0'
 );
 

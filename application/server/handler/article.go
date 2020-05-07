@@ -40,7 +40,7 @@ func FindAllArticles() echo.HandlerFunc {
 		}
 
 		var articlesResult ArticlesResult
-		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg)
+		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg, userID)
 
 		if err != nil {
 			// １つもなかった場合
@@ -76,6 +76,10 @@ func SearchAllArticles() echo.HandlerFunc {
 		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
 		userID := uint(intUserID)
 
+		// ログイン中のユーザIDを取得
+		_loginUserID, _ := strconv.Atoi(c.QueryParam("login_user_id"))
+		loginUserID := uint(_loginUserID)
+
 		// ページング番号を取得
 		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
 
@@ -83,7 +87,7 @@ func SearchAllArticles() echo.HandlerFunc {
 		topicIDStr := c.QueryParam("topic_id")
 
 		var articlesResult ArticlesResult
-		searchedArticles, allPagingNum, err := articleService.SearchAllArticles(refPg, userID, topicIDStr)
+		searchedArticles, allPagingNum, err := articleService.SearchAllArticles(refPg, userID, loginUserID, topicIDStr)
 
 		if err != nil {
 			// １つもなかった場合
@@ -120,9 +124,9 @@ func FindArticleByArticleId() echo.HandlerFunc {
 		articleId, _ := strconv.Atoi(c.Param("article_id"))
 
 		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
-		userID := uint(intUserID)
+		loginUserID := uint(intUserID)
 
-		article, err := articleService.FindArticleByArticleId(uint(articleId))
+		article, err := articleService.FindArticleByArticleId(loginUserID, uint(articleId))
 		if err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
@@ -130,7 +134,7 @@ func FindArticleByArticleId() echo.HandlerFunc {
 		var sliceArticle []model.Article
 		sliceArticle = append(sliceArticle, article)
 
-		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, sliceArticle)
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(loginUserID, sliceArticle)
 
 		return c.JSON(http.StatusOK, updatedArticles[0])
 	}
@@ -257,7 +261,7 @@ func FindArticlesByUserId() echo.HandlerFunc {
 
 		// ログイン中のユーザIDを取得
 		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
-		tryToGetUserID := uint(intUserID)
+		loginUserID := uint(intUserID)
 
 		userID, _ := strconv.Atoi(c.Param("user_id"))
 		// intをuintに変換
@@ -269,10 +273,10 @@ func FindArticlesByUserId() echo.HandlerFunc {
 
 		var articlesResult ArticlesResult
 
-		articles, allPagingNum, err := articleService.FindArticlesByUserIdService(uintUserID, refPg)
+		articles, allPagingNum, err := articleService.FindArticlesByUserIdService(uintUserID, loginUserID, refPg)
 		if err != nil {
 			articlesResult.IsSearched = false
-			articlesResult.SearchUser = tryToGetUserID
+			articlesResult.SearchUser = loginUserID
 			articlesResult.SearchTopics = "0"
 			articlesResult.IsEmpty = true
 			articlesResult.AllPagingNum = allPagingNum
@@ -282,10 +286,10 @@ func FindArticlesByUserId() echo.HandlerFunc {
 		}
 
 		// 各記事にいいね情報を付与
-		updatedArticles, err := likeService.GetLikeInfoByArtiles(tryToGetUserID, articles)
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(loginUserID, articles)
 
 		articlesResult.IsSearched = false
-		articlesResult.SearchUser = tryToGetUserID
+		articlesResult.SearchUser = loginUserID
 		articlesResult.SearchTopics = "0"
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg

@@ -7,8 +7,8 @@ import (
 )
 
 // 全記事を取得(ページング)
-func (a *articleServiceStruct) FindAllArticlesService(refPg int) (articles []model.Article, allPagingNum int, err error) {
-	articles, allPagingNum, err = a.articleRepo.FindAllArticles(refPg)
+func (a *articleServiceStruct) FindAllArticlesService(refPg int, userID uint) (articles []model.Article, allPagingNum int, err error) {
+	articles, allPagingNum, err = a.articleRepo.FindAllArticles(refPg, userID)
 	if err != nil {
 		log.Println(err)
 	}

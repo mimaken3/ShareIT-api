@@ -27,6 +27,7 @@ type CreateArticle struct {
 	CreatedDate    time.Time `json:"created_date"`
 	UpdatedDate    time.Time `json:"updated_date"`
 	DeletedDate    time.Time `json:"deleted_date"`
+	IsPrivate      int8      `json:"is_private"`
 	IsDeleted      int8      `json:"-"`
 }
 
@@ -35,12 +36,11 @@ func (CreateArticle) TableName() string {
 }
 
 // 全記事を取得(ページング)
-func (articleRepo *articleInfraStruct) FindAllArticles(refPg int) (articles []model.Article, allPagingNum int, err error) {
+func (articleRepo *articleInfraStruct) FindAllArticles(refPg int, userID uint) (articles []model.Article, allPagingNum int, err error) {
 	offset := (refPg - 1) * 10
 	rows, err :=
 		articleRepo.db.Raw(
 			`
-select * from(
 select 
   a.article_id, 
   a.article_title, 
@@ -48,33 +48,46 @@ select
   group_concat(
     att.topic_name 
     order by 
-      att.article_topic_id
-			 separator '/'
+      att.article_topic_id separator '/'
   ) as article_topics, 
   a.created_user_id, 
   a.created_date, 
   a.updated_date, 
   a.deleted_date 
 from 
-  articles as a, 
   (
-  select 
-  at.article_topic_id,
-  at.article_id,
-  t.topic_name
-from 
-  article_topics as at 
-  left join topics as t on at.topic_id = t.topic_id
+    select 
+      sub_a2.* 
+    from 
+      articles as sub_a2
+      inner join (
+        select 
+          case 
+          when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          when is_private = 0 and is_deleted = 0 then article_id end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null 
+        limit 
+          10 offset ?
+      ) as sub_a on sub_a2.article_id = sub_a.article_id
+  ) as a, -- ユーザの公開/非公開を考慮したarticlesの10件
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
   ) as att 
 where 
   a.article_id = att.article_id 
-  and is_deleted = 0 
 group by 
   a.article_id
-  ) as tt
-  limit 10 offset ? 
-  ;
-`, offset).Rows()
+;
+`, userID, offset).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
@@ -91,14 +104,30 @@ group by
 	}
 
 	var count int
-	articleRepo.db.Table("articles").Where("is_deleted = 0").Count(&count)
+	row := articleRepo.db.Raw(`
+select 
+  count(*) 
+from 
+  (
+    select 
+      case 
+      when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+      when is_private = 0 and is_deleted = 0 then article_id 
+      end as article_id 
+    from 
+      articles 
+    having 
+      article_id is not null
+  ) as t;
+	`, userID).Row()
+	row.Scan(&count)
 	allPagingNum = (count / 11) + 1
 
 	return
 }
 
 // 記事を検索(ページング)
-func (articleRepo *articleInfraStruct) SearchAllArticles(refPg int, userID uint, topicIDs []uint) (searchedArticles []model.Article, allPagingNum int, err error) {
+func (articleRepo *articleInfraStruct) SearchAllArticles(refPg int, userID uint, loginUserID uint, topicIDs []uint) (searchedArticles []model.Article, allPagingNum int, err error) {
 	offset := (refPg - 1) * 10
 
 	if userID == 0 && topicIDs[0] != 0 {
@@ -106,57 +135,68 @@ func (articleRepo *articleInfraStruct) SearchAllArticles(refPg int, userID uint,
 		rows, err :=
 			articleRepo.db.Raw(`
 select 
-  * 
+  a.article_id, 
+  a.article_title, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id separator '/'
+  ) as article_topics, 
+  a.created_user_id, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date, 
+  a.is_private 
 from 
   (
     select 
-      a.article_id, 
-      a.article_title, 
-      a.article_content, 
-      group_concat(
-        att.topic_name 
-        order by 
-          att.article_topic_id separator '/'
-      ) as article_topics, 
-      a.created_user_id, 
-      a.created_date, 
-      a.updated_date, 
-      a.deleted_date 
+      * 
     from 
       (
         select 
-          * 
+          a.* 
         from 
-          articles 
-        where 
-          article_id in (
+          articles as a 
+          inner join (
             select 
-              article_id 
+              case 
+                when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+                when is_private = 0 and is_deleted = 0 then article_id 
+              end as article_id 
             from 
-              article_topics 
-            where 
-              topic_id in (?)
-          )
-      ) as a, 
-      (
-        select 
-          at.article_topic_id, 
-          at.article_id, 
-          t.topic_name 
-        from 
-          article_topics as at 
-          left join topics as t on at.topic_id = t.topic_id
-      ) as att 
+              articles 
+            having 
+              article_id is not null
+          ) as sub_a on a.article_id = sub_a.article_id
+      ) as articles 
     where 
-      a.article_id = att.article_id 
-      and is_deleted = 0 
-    group by 
-      a.article_id
-  ) as tt 
+      article_id in (
+        select 
+          article_id 
+        from 
+          article_topics 
+        where 
+          topic_id in (?)
+      )
+  ) as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+group by 
+  a.article_id 
 limit 
-  10 offset ?
+  10 offset ? 
 ;	
-		`, topicIDs, offset).Rows()
+		`, loginUserID, topicIDs, offset).Rows()
 		defer rows.Close()
 		for rows.Next() {
 			article := model.Article{}
@@ -176,7 +216,23 @@ limit
 select 
   count(*) 
 from 
-  articles 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0 and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as articles 
 where 
   is_deleted = 0 
   and article_id in (
@@ -186,8 +242,9 @@ where
       article_topics 
     where 
       topic_id in (?)
-  );
-	`, topicIDs).Row()
+  )
+;
+	`, loginUserID, topicIDs).Row()
 		row.Scan(&count)
 		allPagingNum = (count / 11) + 1
 
@@ -197,58 +254,70 @@ where
 	rows, err :=
 		articleRepo.db.Raw(`
 select 
-  * 
+  a.article_id, 
+  a.article_title, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id separator '/'
+  ) as article_topics, 
+  a.created_user_id, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date,
+  a.is_private
 from 
   (
     select 
-      a.article_id, 
-      a.article_title, 
-      a.article_content, 
-      group_concat(
-        att.topic_name 
-        order by 
-          att.article_topic_id separator '/'
-      ) as article_topics, 
-      a.created_user_id, 
-      a.created_date, 
-      a.updated_date, 
-      a.deleted_date 
+      * 
     from 
       (
         select 
-          * 
+          a.* 
         from 
-          articles 
-        where 
-          article_id in (
+          articles as a 
+          inner join (
             select 
-              article_id 
+              case 
+								when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+								when is_private = 0 and is_deleted = 0 then article_id 
+							end as article_id 
             from 
-              article_topics 
-            where 
-              topic_id in (?)
-							and created_user_id = ?
-          )
-      ) as a, 
-      (
-        select 
-          at.article_topic_id, 
-          at.article_id, 
-          t.topic_name 
-        from 
-          article_topics as at 
-          left join topics as t on at.topic_id = t.topic_id
-      ) as att 
+              articles 
+            having 
+              article_id is not null
+          ) as sub_a on a.article_id = sub_a.article_id
+      ) as articles 
     where 
-      a.article_id = att.article_id 
-      and is_deleted = 0 
-    group by 
-      a.article_id
-  ) as tt 
+      article_id in (
+        select 
+          article_id 
+        from 
+          article_topics 
+        where 
+          topic_id in (?) 
+          and created_user_id = ? 
+      )
+  ) as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+  and is_deleted = 0 
+group by 
+  a.article_id 
 limit 
-  10 offset ?
+  10 offset ? 
 ;	
-		`, topicIDs, userID, offset).Rows()
+`, loginUserID, topicIDs, userID, offset).Rows()
 	defer rows.Close()
 	for rows.Next() {
 		article := model.Article{}
@@ -268,10 +337,26 @@ limit
 select 
   count(*) 
 from 
-  articles 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0  and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as articles 
 where 
   is_deleted = 0 
-	and created_user_id = ?
+  and created_user_id = ? 
   and article_id in (
     select 
       article_id 
@@ -279,8 +364,9 @@ where
       article_topics 
     where 
       topic_id in (?)
-  );
-	`, userID, topicIDs).Row()
+  )
+;
+	`, loginUserID, userID, topicIDs).Row()
 	row.Scan(&count)
 	allPagingNum = (count / 11) + 1
 
@@ -288,7 +374,7 @@ where
 }
 
 // 記事を取得
-func (articleRepo *articleInfraStruct) FindArticleByArticleId(articleId uint) (article model.Article, err error) {
+func (articleRepo *articleInfraStruct) FindArticleByArticleId(loginUserID uint, articleId uint) (article model.Article, err error) {
 	result := articleRepo.db.Raw(`
 select 
   a.article_id, 
@@ -297,15 +383,31 @@ select
   group_concat(
     att.topic_name 
     order by 
-      att.article_topic_id
-			 separator '/'
+      att.article_topic_id separator '/'
   ) as article_topics, 
   a.created_user_id, 
   a.created_date, 
   a.updated_date, 
-  a.deleted_date 
+  a.deleted_date, 
+  a.is_private 
 from 
-  articles as a, 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0 and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as a, 
   (
     select 
       at.article_topic_id, 
@@ -321,8 +423,9 @@ where
   and a.article_id = ? 
   and is_deleted = 0 
 group by 
-  a.article_id;
-	`, articleId).Scan(&article)
+  a.article_id
+;   
+	`, loginUserID, articleId).Scan(&article)
 
 	if result.Error != nil {
 		// レコードがない場合
@@ -351,6 +454,7 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	ar.CreatedDate = customisedNowTime
 	ar.UpdatedDate = customisedNowTime
 	ar.DeletedDate = defaultDeletedDate
+	ar.IsPrivate = createArticle.IsPrivate
 
 	articleRepo.db.Create(&ar)
 
@@ -363,6 +467,7 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	createdArticle.CreatedDate = customisedNowTime
 	createdArticle.UpdatedDate = customisedNowTime
 	createdArticle.DeletedDate = defaultDeletedDate
+	createdArticle.IsPrivate = createArticle.IsPrivate
 
 	return
 }
@@ -379,6 +484,7 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 	// 更新するフィールドを設定
 	updateTitle := willBeUpdatedArticle.ArticleTitle
 	updateContent := willBeUpdatedArticle.ArticleContent
+	updateIsPrivate := willBeUpdatedArticle.IsPrivate
 
 	// 更新
 	articleRepo.db.Model(&updatedArticle).
@@ -387,6 +493,7 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 			"article_title":   updateTitle,
 			"article_content": updateContent,
 			"updated_date":    customisedUpdateTime,
+			"is_private":      updateIsPrivate,
 		})
 
 	// 興味トピックを文字列で,区切りで取得
@@ -430,59 +537,73 @@ group by
 	updatedArticle.CreatedUserID = willBeUpdatedArticle.CreatedUserID
 	updatedArticle.CreatedDate = willBeUpdatedArticle.CreatedDate
 	updatedArticle.DeletedDate = willBeUpdatedArticle.DeletedDate
+	updatedArticle.IsPrivate = willBeUpdatedArticle.IsPrivate
 
 	return
 }
 
 // 特定のユーザの全記事を取得
-func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint, refPg int) (articles []model.Article, allPagingNum int, err error) {
+func (articleRepo *articleInfraStruct) FindArticlesByUserId(userID uint, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error) {
 	offset := (refPg - 1) * 10
 	rows, err :=
 		articleRepo.db.Raw(`
 select 
-  * 
+  a.article_id, 
+  a.article_title, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id separator '/'
+  ) as article_topics, 
+  a.created_user_id, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date, 
+  a.is_private 
 from 
   (
     select 
-      a.article_id, 
-      a.article_title, 
-      a.article_content, 
-      group_concat(
-        att.topic_name 
-        order by 
-          att.article_topic_id separator '/'
-      ) as article_topics, 
-      a.created_user_id, 
-      a.created_date, 
-      a.updated_date, 
-      a.deleted_date 
+      * 
     from 
       (
         select 
-          * 
+          a.* 
         from 
-          articles 
-        where 
-          created_user_id = ?
-      ) as a, 
-      (
-        select 
-          at.article_topic_id, 
-          at.article_id, 
-          t.topic_name 
-        from 
-          article_topics as at 
-          left join topics as t on at.topic_id = t.topic_id
-      ) as att 
+          articles as a 
+          inner join (
+            select 
+              case 
+              	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+              	when is_private = 0 and is_deleted = 0 then article_id
+              end as article_id 
+            from 
+              articles 
+            having 
+              article_id is not null
+          ) as sub_a on a.article_id = sub_a.article_id
+      ) as articles 
     where 
-      a.article_id = att.article_id 
-      and is_deleted = 0 
-    group by 
-      a.article_id
-  ) as tt 
+      created_user_id = ?
+  ) as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+  and is_deleted = 0 
+group by 
+  a.article_id 
 limit 
-  10 offset ?;
-`, userID, offset).Rows()
+  10 offset ? 
+;
+`, loginUserID, userID, offset).Rows()
 
 	defer rows.Close()
 	for rows.Next() {
@@ -499,7 +620,39 @@ limit
 	}
 
 	var count int
-	articleRepo.db.Table("articles").Where("is_deleted = 0 AND created_user_id = ?", userID).Count(&count)
+	row := articleRepo.db.Raw(`
+select 
+  count(*) 
+from 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0  and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as articles 
+where 
+  is_deleted = 0 
+  and created_user_id = ? 
+  and article_id in (
+    select 
+      article_id 
+    from 
+      article_topics 
+  )
+;
+	`, loginUserID, userID).Row()
+	row.Scan(&count)
 	allPagingNum = (count / 11) + 1
 
 	return
@@ -518,44 +671,62 @@ func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.
 
 	articleRepo.db.Raw(`
 select 
-	* 
+  * 
 from 
-	(
-		select 
-			a.article_id, 
-			a.article_title, 
-			a.article_content, 
-			group_concat(
-				att.topic_name 
-				order by 
-					att.article_topic_id separator '/'
-			) as article_topics, 
-			a.created_user_id, 
-			a.created_date, 
-			a.updated_date, 
-			a.deleted_date 
-		from 
-			articles as a, 
-			(
-				select 
-					at.article_topic_id, 
-					at.article_id, 
-					at.topic_id, 
-					t.topic_name 
-				from 
-					article_topics as at 
-					left join topics as t on at.topic_id = t.topic_id
-			) as att 
-		where 
-			a.article_id = att.article_id 
-			and a.article_id in (?) 
-			and is_deleted = 0 
-		group by 
-			a.article_id
-	) as ddd 
+  (
+    select 
+      a.article_id, 
+      a.article_title, 
+      a.article_content, 
+      group_concat(
+        att.topic_name 
+        order by 
+          att.article_topic_id separator '/'
+      ) as article_topics, 
+      a.created_user_id, 
+      a.created_date, 
+      a.updated_date, 
+      a.deleted_date, 
+      a.is_private 
+    from 
+      (
+        select 
+          a.* 
+        from 
+          articles as a 
+          inner join (
+            select 
+              case 
+              	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id
+                when is_private = 0 and is_deleted = 0 then article_id 
+              end as article_id 
+            from 
+              articles 
+            having 
+              article_id is not null
+          ) as sub_a on a.article_id = sub_a.article_id
+      ) as a, 
+      (
+        select 
+          at.article_topic_id, 
+          at.article_id, 
+          at.topic_id, 
+          t.topic_name 
+        from 
+          article_topics as at 
+          left join topics as t on at.topic_id = t.topic_id
+      ) as att 
+    where 
+      a.article_id = att.article_id 
+      and a.article_id in (?) 
+      and is_deleted = 0 
+    group by 
+      a.article_id
+  ) as ddd 
 limit 
-	10 offset ?;
-`, articlesIDArr, offset).Scan(&articles)
+  10 offset ? 
+;
+`, loginUserID, articlesIDArr, offset).Scan(&articles)
 
 	// レコードがない場合
 	if len(articles) == 0 {
@@ -563,9 +734,32 @@ limit
 	}
 
 	var count int
-	// article_topicsテーブルに削除フラグがないため(正確なレコード数が取得出来てない)
-	// 以下の記述でレコードの数を取得
-	articleRepo.db.Table("articles").Where("is_deleted = 0 AND article_id IN (?)", articlesIDArr).Count(&count)
+	row := articleRepo.db.Raw(`
+select 
+  count(*) 
+from 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0 and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as articles 
+where 
+  article_id in(?)
+;
+	`, loginUserID, articlesIDArr).Row()
+	row.Scan(&count)
 	allPagingNum = (count / 11) + 1
 
 	return
