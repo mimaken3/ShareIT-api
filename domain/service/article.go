@@ -27,7 +27,7 @@ type ArticleServiceInterface interface {
 	UpdateArticleByArticleId(willBeUpdatedArticle model.Article) (updatedArticle model.Article, err error)
 
 	// 特定のユーザの全記事を取得(ページング)
-	FindArticlesByUserIdService(userID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
+	FindArticlesByUserIdService(userID uint, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
 
 	// 特定のトピックを含む記事を取得
 	FindArticlesByTopicIdService(articleIds []model.ArticleTopic, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
