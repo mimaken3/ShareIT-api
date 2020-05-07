@@ -76,6 +76,10 @@ func SearchAllArticles() echo.HandlerFunc {
 		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
 		userID := uint(intUserID)
 
+		// ログイン中のユーザIDを取得
+		_loginUserID, _ := strconv.Atoi(c.QueryParam("login_user_id"))
+		loginUserID := uint(_loginUserID)
+
 		// ページング番号を取得
 		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
 
@@ -83,7 +87,7 @@ func SearchAllArticles() echo.HandlerFunc {
 		topicIDStr := c.QueryParam("topic_id")
 
 		var articlesResult ArticlesResult
-		searchedArticles, allPagingNum, err := articleService.SearchAllArticles(refPg, userID, topicIDStr)
+		searchedArticles, allPagingNum, err := articleService.SearchAllArticles(refPg, userID, loginUserID, topicIDStr)
 
 		if err != nil {
 			// １つもなかった場合

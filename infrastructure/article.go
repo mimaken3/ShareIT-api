@@ -127,7 +127,7 @@ from
 }
 
 // 記事を検索(ページング)
-func (articleRepo *articleInfraStruct) SearchAllArticles(refPg int, userID uint, topicIDs []uint) (searchedArticles []model.Article, allPagingNum int, err error) {
+func (articleRepo *articleInfraStruct) SearchAllArticles(refPg int, userID uint, loginUserID uint, topicIDs []uint) (searchedArticles []model.Article, allPagingNum int, err error) {
 	offset := (refPg - 1) * 10
 
 	if userID == 0 && topicIDs[0] != 0 {
@@ -196,7 +196,7 @@ group by
 limit 
   10 offset ? 
 ;	
-		`, userID, topicIDs, offset).Rows()
+		`, loginUserID, topicIDs, offset).Rows()
 		defer rows.Close()
 		for rows.Next() {
 			article := model.Article{}
@@ -244,7 +244,7 @@ where
       topic_id in (?)
   )
 ;
-	`, userID, topicIDs).Row()
+	`, loginUserID, topicIDs).Row()
 		row.Scan(&count)
 		allPagingNum = (count / 11) + 1
 
@@ -254,58 +254,70 @@ where
 	rows, err :=
 		articleRepo.db.Raw(`
 select 
-  * 
+  a.article_id, 
+  a.article_title, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id separator '/'
+  ) as article_topics, 
+  a.created_user_id, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date,
+  a.is_private
 from 
   (
     select 
-      a.article_id, 
-      a.article_title, 
-      a.article_content, 
-      group_concat(
-        att.topic_name 
-        order by 
-          att.article_topic_id separator '/'
-      ) as article_topics, 
-      a.created_user_id, 
-      a.created_date, 
-      a.updated_date, 
-      a.deleted_date 
+      * 
     from 
       (
         select 
-          * 
+          a.* 
         from 
-          articles 
-        where 
-          article_id in (
+          articles as a 
+          inner join (
             select 
-              article_id 
+              case 
+								when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+								when is_private = 0 and is_deleted = 0 then article_id 
+							end as article_id 
             from 
-              article_topics 
-            where 
-              topic_id in (?)
-							and created_user_id = ?
-          )
-      ) as a, 
-      (
-        select 
-          at.article_topic_id, 
-          at.article_id, 
-          t.topic_name 
-        from 
-          article_topics as at 
-          left join topics as t on at.topic_id = t.topic_id
-      ) as att 
+              articles 
+            having 
+              article_id is not null
+          ) as sub_a on a.article_id = sub_a.article_id
+      ) as articles 
     where 
-      a.article_id = att.article_id 
-      and is_deleted = 0 
-    group by 
-      a.article_id
-  ) as tt 
+      article_id in (
+        select 
+          article_id 
+        from 
+          article_topics 
+        where 
+          topic_id in (?) 
+          and created_user_id = ? 
+      )
+  ) as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+  and is_deleted = 0 
+group by 
+  a.article_id 
 limit 
-  10 offset ?
+  10 offset ? 
 ;	
-		`, topicIDs, userID, offset).Rows()
+`, loginUserID, topicIDs, userID, offset).Rows()
 	defer rows.Close()
 	for rows.Next() {
 		article := model.Article{}
@@ -325,10 +337,26 @@ limit
 select 
   count(*) 
 from 
-  articles 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0  and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as articles 
 where 
   is_deleted = 0 
-	and created_user_id = ?
+  and created_user_id = ? 
   and article_id in (
     select 
       article_id 
@@ -336,8 +364,9 @@ where
       article_topics 
     where 
       topic_id in (?)
-  );
-	`, userID, topicIDs).Row()
+  )
+;
+	`, loginUserID, userID, topicIDs).Row()
 	row.Scan(&count)
 	allPagingNum = (count / 11) + 1
 
