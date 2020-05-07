@@ -124,9 +124,9 @@ func FindArticleByArticleId() echo.HandlerFunc {
 		articleId, _ := strconv.Atoi(c.Param("article_id"))
 
 		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
-		userID := uint(intUserID)
+		loginUserID := uint(intUserID)
 
-		article, err := articleService.FindArticleByArticleId(uint(articleId))
+		article, err := articleService.FindArticleByArticleId(loginUserID, uint(articleId))
 		if err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
@@ -134,7 +134,7 @@ func FindArticleByArticleId() echo.HandlerFunc {
 		var sliceArticle []model.Article
 		sliceArticle = append(sliceArticle, article)
 
-		updatedArticles, err := likeService.GetLikeInfoByArtiles(userID, sliceArticle)
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(loginUserID, sliceArticle)
 
 		return c.JSON(http.StatusOK, updatedArticles[0])
 	}

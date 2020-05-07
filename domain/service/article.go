@@ -15,7 +15,7 @@ type ArticleServiceInterface interface {
 	CreateArticle(createArticle model.Article) (createdArticle model.Article, err error)
 
 	// 記事を取得
-	FindArticleByArticleId(articleId uint) (article model.Article, err error)
+	FindArticleByArticleId(loginUserID uint, articleId uint) (article model.Article, err error)
 
 	// 全記事を取得(ページング)
 	FindAllArticlesService(refPg int, userID uint) (articles []model.Article, allPagingNum int, err error)

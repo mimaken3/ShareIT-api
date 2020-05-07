@@ -374,7 +374,7 @@ where
 }
 
 // 記事を取得
-func (articleRepo *articleInfraStruct) FindArticleByArticleId(articleId uint) (article model.Article, err error) {
+func (articleRepo *articleInfraStruct) FindArticleByArticleId(loginUserID uint, articleId uint) (article model.Article, err error) {
 	result := articleRepo.db.Raw(`
 select 
   a.article_id, 
@@ -383,15 +383,31 @@ select
   group_concat(
     att.topic_name 
     order by 
-      att.article_topic_id
-			 separator '/'
+      att.article_topic_id separator '/'
   ) as article_topics, 
   a.created_user_id, 
   a.created_date, 
   a.updated_date, 
-  a.deleted_date 
+  a.deleted_date, 
+  a.is_private 
 from 
-  articles as a, 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0 and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as a, 
   (
     select 
       at.article_topic_id, 
@@ -407,8 +423,9 @@ where
   and a.article_id = ? 
   and is_deleted = 0 
 group by 
-  a.article_id;
-	`, articleId).Scan(&article)
+  a.article_id
+;   
+	`, loginUserID, articleId).Scan(&article)
 
 	if result.Error != nil {
 		// レコードがない場合
