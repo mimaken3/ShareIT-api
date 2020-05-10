@@ -34,7 +34,7 @@ func GetPreSignedURL(iconName string) (preSignedURL string, err error) {
 	})
 
 	// １ヶ月
-	preSignedURL, _, err = req.PresignRequest(24 * time.Hour * 30)
+	preSignedURL, _, err = req.PresignRequest(24 * time.Hour * 7)
 
 	return
 }
