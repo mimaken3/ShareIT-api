@@ -8,14 +8,13 @@ import (
 )
 
 type jwtCustomClaims struct {
-	UID  uint   `json:"uid"`
-	Name string `json:"name"`
+	UID   uint   `json:"uid"`
+	Name  string `json:"name"`
+	Admin bool   `json:"admin"`
 	jwt.StandardClaims
 }
 
 var signingKey = []byte(os.Getenv("SECRET_KEY"))
-
-var a = os.Getenv("SECRET_KEY")
 
 var Config = middleware.JWTConfig{
 	Claims:     &jwtCustomClaims{},

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -106,6 +107,11 @@ func FindUserByUserId() echo.HandlerFunc {
 		userId, _ := strconv.Atoi(c.Param("user_id"))
 		user, err := userService.FindUserByUserIdService(userId)
 
+		userJWT := c.Get("user").(*jwt.Token)
+		claims := userJWT.Claims.(*jwtCustomClaims)
+		fmt.Println(claims.Name)
+		fmt.Println(claims.UID)
+
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())
 		}
@@ -156,10 +162,18 @@ func Login() echo.HandlerFunc {
 		if message == "success" {
 			// 成功
 
+			var isAdmin bool
+			if resultUser.UserID == 1 {
+				isAdmin = true
+			} else {
+				isAdmin = false
+			}
+
 			// Set claims
 			claims := &jwtCustomClaims{
 				resultUser.UserID,
 				resultUser.UserName,
+				isAdmin,
 				jwt.StandardClaims{
 					ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 				},
