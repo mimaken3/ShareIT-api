@@ -33,7 +33,8 @@ func GetPreSignedURL(iconName string) (preSignedURL string, err error) {
 		Key:    aws.String("user-icons/" + iconName),
 	})
 
-	preSignedURL, _, err = req.PresignRequest(10 * time.Minute)
+	// １ヶ月
+	preSignedURL, _, err = req.PresignRequest(24 * time.Hour * 30)
 
 	return
 }
