@@ -5,3 +5,4 @@ cmd/__debug_bin
 import-data-to-db/
 dbconfig.yml
 db/
+.ssh/
