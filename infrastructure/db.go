@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
+	"google.golang.org/appengine"
 )
 
 var DB *gorm.DB
@@ -18,13 +19,17 @@ func init() {
 	if e != nil {
 		log.Println(e)
 	}
-	USER := os.Getenv("DB_USER")
-	PASS := os.Getenv("DB_PASSWORD")
-	PROTOCOL := os.Getenv("PROTOCOL")
-	DBNAME := os.Getenv("DBNAME")
 
-	CONNECT := USER + ":" + PASS + "@" + PROTOCOL + "/" + DBNAME
-	DB, err = gorm.Open(DBMS, CONNECT)
+	cloudSQLConnection := os.Getenv("CLOUD_SQL_CONNECTION")
+	localSQLConnection := os.Getenv("LOCAL_SQL_CONNECTION")
+	if appengine.IsAppEngine() {
+		// GAE
+		DB, err = gorm.Open(DBMS, cloudSQLConnection)
+	} else {
+		// Local
+		DB, err = gorm.Open(DBMS, localSQLConnection)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
