@@ -2,7 +2,6 @@ package infrastructure
 
 import (
 	"errors"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/mimaken3/ShareIT-api/domain/model"
@@ -53,20 +52,15 @@ func (topicRepo *topicInfraStruct) CheckTopicName(topicName string) (isDuplicate
 
 // トピックを登録
 func (topicRepo *topicInfraStruct) CreateTopic(createTopic model.Topic, lastTopicID uint) (createdTopic model.Topic, err error) {
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	nowTime := time.Now().Format(dateFormat)
-	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
-
-	const defaultDeletedDateStr = "9999-12-31 23:59:59"
-	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, defaultDeletedDate := getDate()
 
 	// DBに保存するトピックを準備
 	createdTopic.TopicID = lastTopicID + 1
 	createdTopic.TopicName = createTopic.TopicName
 	createdTopic.ProposedUserID = createTopic.ProposedUserID
-	createdTopic.CreatedDate = customisedNowTime
-	createdTopic.UpdatedDate = customisedNowTime
+	createdTopic.CreatedDate = currentDate
+	createdTopic.UpdatedDate = currentDate
 	createdTopic.DeletedDate = defaultDeletedDate
 
 	// 作成
@@ -100,16 +94,14 @@ func (topicRepo *topicInfraStruct) DeleteTopicByTopicID(uintTopicID uint) (err e
 		return
 	}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	topicRepo.db.Model(&deleteTopic).
 		Where("topic_id = ? AND is_deleted = ?", uintTopicID, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 

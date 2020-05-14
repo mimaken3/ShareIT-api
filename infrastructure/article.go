@@ -436,13 +436,8 @@ group by
 
 // 記事を投稿
 func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article, lastArticleId uint) (createdArticle model.Article, err error) {
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	nowTime := time.Now().Format(dateFormat)
-	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
-
-	const defaultDeletedDateStr = "9999-12-31 23:59:59"
-	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, defaultDeletedDate := getDate()
 
 	ar := CreateArticle{}
 
@@ -451,8 +446,8 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	ar.ArticleTitle = createArticle.ArticleTitle
 	ar.ArticleContent = createArticle.ArticleContent
 	ar.CreatedUserID = createArticle.CreatedUserID
-	ar.CreatedDate = customisedNowTime
-	ar.UpdatedDate = customisedNowTime
+	ar.CreatedDate = currentDate
+	ar.UpdatedDate = currentDate
 	ar.DeletedDate = defaultDeletedDate
 	ar.IsPrivate = createArticle.IsPrivate
 
@@ -464,8 +459,8 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 	createdArticle.ArticleContent = createArticle.ArticleContent
 	createdArticle.ArticleTopics = createArticle.ArticleTopics
 	createdArticle.CreatedUserID = createArticle.CreatedUserID
-	createdArticle.CreatedDate = customisedNowTime
-	createdArticle.UpdatedDate = customisedNowTime
+	createdArticle.CreatedDate = currentDate
+	createdArticle.UpdatedDate = currentDate
 	createdArticle.DeletedDate = defaultDeletedDate
 	createdArticle.IsPrivate = createArticle.IsPrivate
 
@@ -474,10 +469,8 @@ func (articleRepo *articleInfraStruct) CreateArticle(createArticle model.Article
 
 // 記事を更新
 func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArticle model.Article) (updatedArticle model.Article, err error) {
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	updateTime := time.Now().Format(dateFormat)
-	customisedUpdateTime, _ := time.Parse(dateFormat, updateTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	updateId := willBeUpdatedArticle.ArticleID
 
@@ -492,7 +485,7 @@ func (articleRepo *articleInfraStruct) UpdateArticleByArticleId(willBeUpdatedArt
 		Updates(map[string]interface{}{
 			"article_title":   updateTitle,
 			"article_content": updateContent,
-			"updated_date":    customisedUpdateTime,
+			"updated_date":    currentDate,
 			"is_private":      updateIsPrivate,
 		})
 
@@ -850,16 +843,14 @@ func (articleRepo *articleInfraStruct) DeleteArticleByArticleId(articleId uint) 
 		return
 	}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	articleRepo.db.Model(&deleteArticle).
 		Where("article_id = ? AND is_deleted = ?", articleId, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 
@@ -870,16 +861,14 @@ func (articleRepo *articleInfraStruct) DeleteArticleByArticleId(articleId uint) 
 func (articleRepo *articleInfraStruct) DeleteArticleByUserID(userID uint) (err error) {
 	deleteArticle := []model.Article{}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	articleRepo.db.Model(&deleteArticle).
 		Where("created_user_id = ? AND is_deleted = ?", userID, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 

@@ -2,7 +2,6 @@ package infrastructure
 
 import (
 	"errors"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/mimaken3/ShareIT-api/domain/model"
@@ -32,13 +31,8 @@ func (commentRepo *commentInfraStruct) FindLastCommentID() (lastCommentID uint, 
 
 // コメント作成
 func (commentRepo *commentInfraStruct) CreateComment(createComment model.Comment, lastCommentID uint) (createdComment model.ResponseComment, err error) {
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	nowTime := time.Now().Format(dateFormat)
-	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
-
-	const defaultDeletedDateStr = "9999-12-31 23:59:59"
-	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, defaultDeletedDate := getDate()
 
 	var _createdComment model.Comment
 	// DBに保存する記事のモデルを作成
@@ -46,8 +40,8 @@ func (commentRepo *commentInfraStruct) CreateComment(createComment model.Comment
 	_createdComment.ArticleID = createComment.ArticleID
 	_createdComment.UserID = createComment.UserID
 	_createdComment.Content = createComment.Content
-	_createdComment.CreatedDate = customisedNowTime
-	_createdComment.UpdatedDate = customisedNowTime
+	_createdComment.CreatedDate = currentDate
+	_createdComment.UpdatedDate = currentDate
 	_createdComment.DeletedDate = defaultDeletedDate
 
 	commentRepo.db.Create(&_createdComment)
@@ -123,10 +117,8 @@ WHERE
 
 // コメントを編集
 func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment) (updatedComment model.ResponseComment, err error) {
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	updateTime := time.Now().Format(dateFormat)
-	customisedUpdateTime, _ := time.Parse(dateFormat, updateTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	commentID := updateComment.CommentID
 
@@ -139,7 +131,7 @@ func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment
 		Where("comment_id = ?", commentID).
 		Updates(map[string]interface{}{
 			"content":      updateContent,
-			"updated_date": customisedUpdateTime,
+			"updated_date": currentDate,
 		})
 
 	result := commentRepo.db.Raw(`
@@ -180,16 +172,14 @@ func (commentRepo *commentInfraStruct) DeleteComment(commentID uint) (err error)
 		return
 	}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	commentRepo.db.Model(&deleteComment).
 		Where("comment_id = ? AND is_deleted = ?", commentID, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 
@@ -200,16 +190,14 @@ func (commentRepo *commentInfraStruct) DeleteComment(commentID uint) (err error)
 func (commentRepo *commentInfraStruct) DeleteCommentByArticleID(articleID uint) (err error) {
 	deleteComment := []model.Comment{}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	commentRepo.db.Model(&deleteComment).
 		Where("article_id = ? AND is_deleted = ?", articleID, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 
@@ -220,16 +208,14 @@ func (commentRepo *commentInfraStruct) DeleteCommentByArticleID(articleID uint) 
 func (commentRepo *commentInfraStruct) DeleteCommentByUserID(userID uint) (err error) {
 	deleteComment := []model.Comment{}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	commentRepo.db.Model(&deleteComment).
 		Where("user_id = ? AND is_deleted = ?", userID, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 

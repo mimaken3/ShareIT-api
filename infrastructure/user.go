@@ -151,16 +151,14 @@ func (userRepo *userInfraStruct) DeleteUser(userID uint) (err error) {
 		return
 	}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	userRepo.db.Model(&deleteUser).
 		Where("user_id= ? AND is_deleted = ?", userID, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 
@@ -291,27 +289,22 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 
 	signUpUser := SignUpUser{}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	nowTime := time.Now().Format(dateFormat)
-	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
-
-	const defaultDeletedDateStr = "9999-12-31 23:59:59"
-	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, defaultDeletedDate := getDate()
 
 	signUpUser.UserID = lastUserId + 1
 	signUpUser.UserName = user.UserName
 	signUpUser.Email = user.Email
 	signUpUser.Password = user.Password
-	signUpUser.CreatedDate = customisedNowTime
-	signUpUser.UpdatedDate = customisedNowTime
+	signUpUser.CreatedDate = currentDate
+	signUpUser.UpdatedDate = currentDate
 	signUpUser.DeletedDate = defaultDeletedDate
 
 	userRepo.db.Create(&signUpUser)
 
 	user.UserID = lastUserId + 1
-	user.CreatedDate = customisedNowTime
-	user.UpdatedDate = customisedNowTime
+	user.CreatedDate = currentDate
+	user.UpdatedDate = currentDate
 	user.DeletedDate = defaultDeletedDate
 
 	// セキュリティのためパスワードは返さない
@@ -403,12 +396,10 @@ func (userRepo *userInfraStruct) DeleteTopicFromInterestedTopics(deleteTopicID u
 func (userRepo *userInfraStruct) UpdateUser(userID uint) (err error) {
 	user := model.User{}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	nowTime := time.Now().Format(dateFormat)
-	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
-	userRepo.db.Model(&user).Where("user_id = ?", userID).Update("updated_date", customisedNowTime)
+	userRepo.db.Model(&user).Where("user_id = ?", userID).Update("updated_date", currentDate)
 
 	return
 }
