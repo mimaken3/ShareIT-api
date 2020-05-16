@@ -79,7 +79,7 @@ group by
 ) as ddd
 left join profiles as p on (ddd.user_id = p.user_id) 
 left join icons as i on (ddd.user_id = i.user_id)
-order by ddd.user_id
+order by ddd.created_date desc
 limit 10 offset ?
 ;
 	`, offset).Rows()
@@ -107,7 +107,7 @@ limit 10 offset ?
 
 // 全ユーザを取得(セレクトボックス)
 func (userRepo *userInfraStruct) FindAllUsersForSelectBox() (users []model.User, err error) {
-	if result := userRepo.db.Select("user_id, user_name").Where("is_deleted = 0").Find(&users); result.Error != nil {
+	if result := userRepo.db.Select("user_id, user_name, created_date").Where("is_deleted = 0").Order("created_date desc").Find(&users); result.Error != nil {
 		// レコードがない場合
 		err = result.Error
 		return

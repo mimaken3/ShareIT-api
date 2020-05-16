@@ -69,6 +69,7 @@ from
           articles 
         having 
           article_id is not null 
+				 order by created_date desc
         limit 
           10 offset ?
       ) as sub_a on sub_a2.article_id = sub_a.article_id
@@ -86,6 +87,7 @@ where
   a.article_id = att.article_id 
 group by 
   a.article_id
+order by created_date desc
 ;
 `, userID, offset).Rows()
 
@@ -168,6 +170,7 @@ from
               articles 
             having 
               article_id is not null
+            order by created_date desc
           ) as sub_a on a.article_id = sub_a.article_id
       ) as articles 
     where 
@@ -193,6 +196,7 @@ where
   a.article_id = att.article_id 
 group by 
   a.article_id 
+order by created_date desc
 limit 
   10 offset ? 
 ;	
@@ -224,7 +228,7 @@ from
       inner join (
         select 
           case 
-          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id  
           	when is_private = 0 and is_deleted = 0 then article_id 
           end as article_id 
         from 
@@ -265,8 +269,8 @@ select
   a.created_user_id, 
   a.created_date, 
   a.updated_date, 
-  a.deleted_date,
-  a.is_private
+  a.deleted_date, 
+  a.is_private 
 from 
   (
     select 
@@ -280,13 +284,15 @@ from
           inner join (
             select 
               case 
-								when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
-								when is_private = 0 and is_deleted = 0 then article_id 
-							end as article_id 
+              	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+              	when is_private = 0 and is_deleted = 0 then article_id 
+              end as article_id 
             from 
               articles 
             having 
-              article_id is not null
+              article_id is not null 
+            order by 
+              created_date desc
           ) as sub_a on a.article_id = sub_a.article_id
       ) as articles 
     where 
@@ -297,7 +303,7 @@ from
           article_topics 
         where 
           topic_id in (?) 
-          and created_user_id = ? 
+          and created_user_id = ?
       )
   ) as a, 
   (
@@ -314,9 +320,11 @@ where
   and is_deleted = 0 
 group by 
   a.article_id 
+order by 
+  created_date desc 
 limit 
-  10 offset ? 
-;	
+  10 offset ?
+;
 `, loginUserID, topicIDs, userID, offset).Rows()
 	defer rows.Close()
 	for rows.Next() {
@@ -574,6 +582,7 @@ from
               articles 
             having 
               article_id is not null
+						order by created_date desc
           ) as sub_a on a.article_id = sub_a.article_id
       ) as articles 
     where 
@@ -593,6 +602,7 @@ where
   and is_deleted = 0 
 group by 
   a.article_id 
+order by created_date desc
 limit 
   10 offset ? 
 ;
@@ -697,6 +707,7 @@ from
               articles 
             having 
               article_id is not null
+						order by created_date desc
           ) as sub_a on a.article_id = sub_a.article_id
       ) as a, 
       (
@@ -716,6 +727,7 @@ from
     group by 
       a.article_id
   ) as ddd 
+order by created_date desc
 limit 
   10 offset ? 
 ;
