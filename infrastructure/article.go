@@ -123,7 +123,11 @@ from
   ) as t;
 	`, userID).Row()
 	row.Scan(&count)
-	allPagingNum = (count / 11) + 1
+	if (count % 10) == 0 {
+		allPagingNum = count / 10
+	} else {
+		allPagingNum = (count / 10) + 1
+	}
 
 	return
 }
@@ -250,7 +254,11 @@ where
 ;
 	`, loginUserID, topicIDs).Row()
 		row.Scan(&count)
-		allPagingNum = (count / 11) + 1
+		if (count % 10) == 0 {
+			allPagingNum = count / 10
+		} else {
+			allPagingNum = (count / 10) + 1
+		}
 
 		return searchedArticles, allPagingNum, nil
 	}
@@ -376,7 +384,11 @@ where
 ;
 	`, loginUserID, userID, topicIDs).Row()
 	row.Scan(&count)
-	allPagingNum = (count / 11) + 1
+	if (count % 10) == 0 {
+		allPagingNum = count / 10
+	} else {
+		allPagingNum = (count / 10) + 1
+	}
 
 	return searchedArticles, allPagingNum, nil
 }
@@ -656,7 +668,11 @@ where
 ;
 	`, loginUserID, userID).Row()
 	row.Scan(&count)
-	allPagingNum = (count / 11) + 1
+	if (count % 10) == 0 {
+		allPagingNum = count / 10
+	} else {
+		allPagingNum = (count / 10) + 1
+	}
 
 	return
 }
@@ -765,7 +781,11 @@ where
 ;
 	`, loginUserID, articlesIDArr).Row()
 	row.Scan(&count)
-	allPagingNum = (count / 11) + 1
+	if (count % 10) == 0 {
+		allPagingNum = count / 10
+	} else {
+		allPagingNum = (count / 10) + 1
+	}
 
 	return
 }

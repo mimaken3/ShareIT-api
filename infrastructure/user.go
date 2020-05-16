@@ -100,7 +100,11 @@ limit 10 offset ?
 
 	var count int
 	userRepo.db.Table("users").Where("is_deleted = 0").Count(&count)
-	allPagingNum = (count / 11) + 1
+	if (count % 10) == 0 {
+		allPagingNum = count / 10
+	} else {
+		allPagingNum = (count / 10) + 1
+	}
 
 	return
 }
