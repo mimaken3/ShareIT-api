@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users(
   user_id INT UNSIGNED NOT NULL PRIMARY KEY,
   user_name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
   password VARCHAR(255) NOT NULL,
   created_date DATETIME NOT NULL,
   updated_date DATETIME NOT NULL,

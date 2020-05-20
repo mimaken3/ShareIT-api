@@ -15,6 +15,8 @@ func (u *userServiceStruct) FindUserByUserIdService(userId int) (model.User, err
 	// 署名付きURLを取得
 	user.IconName, err = GetPreSignedURL(user.IconName)
 
+	user.Email = ""
+
 	// セキュリティのためパスワードを返さない
 	user.Password = ""
 
