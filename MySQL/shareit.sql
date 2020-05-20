@@ -32,7 +32,7 @@ create table articles(
   article_id INT UNSIGNED NOT NULL PRIMARY KEY,
   created_user_id INT unsigned NOT NULL,
   article_title VARCHAR(255) NOT NULL,
-  article_content VARCHAR(1000) NOT NULL,
+  article_content VARCHAR(10000) NOT NULL,
   created_date DATETIME NOT NULL,
   updated_date DATETIME NOT NULL,
   deleted_date DATETIME NOT NULL, 
