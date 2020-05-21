@@ -32,7 +32,7 @@ create table articles(
   article_id INT UNSIGNED NOT NULL PRIMARY KEY,
   created_user_id INT unsigned NOT NULL,
   article_title VARCHAR(255) NOT NULL,
-  article_content VARCHAR(10000) NOT NULL,
+  article_content VARCHAR(9999) NOT NULL,
   created_date DATETIME NOT NULL,
   updated_date DATETIME NOT NULL,
   deleted_date DATETIME NOT NULL, 
@@ -65,7 +65,7 @@ DROP TABLE IF EXISTS profiles;
 CREATE TABLE profiles(
   profile_id INT UNSIGNED NOT NULL PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL,
-  content VARCHAR(1000),
+  content VARCHAR(999),
   is_deleted TINYINT(1) NOT NULL DEFAULT '0'
 );
 
@@ -94,7 +94,7 @@ CREATE TABLE comments(
   comment_id INT UNSIGNED NOT NULL PRIMARY KEY,
   article_id INT UNSIGNED NOT NULL,
   user_id INT UNSIGNED NOT NULL,
-  content VARCHAR(1000) NOT NULL,
+  content VARCHAR(999) NOT NULL,
   created_date DATETIME NOT NULL,
   updated_date DATETIME NOT NULL,
   deleted_date DATETIME NOT NULL, 
