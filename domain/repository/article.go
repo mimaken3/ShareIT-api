@@ -22,6 +22,9 @@ type ArticleRepository interface {
 	// 特定のユーザの全記事を取得(ページング)
 	FindArticlesByUserId(userID uint, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
 
+	// 特定のユーザのいいねした記事を取得(ページング)
+	FindAllLikedArticlesByUserID(userID uint, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
+
 	// 特定のトピックを含む記事を取得
 	FindArticlesByTopicId(articleIds []model.ArticleTopic, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
 

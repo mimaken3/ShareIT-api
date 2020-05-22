@@ -677,6 +677,135 @@ where
 	return
 }
 
+// 特定のユーザのいいねした記事を取得(ページング)
+func (articleRepo *articleInfraStruct) FindAllLikedArticlesByUserID(userID uint, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error) {
+	offset := (refPg - 1) * 10
+	rows, err :=
+		articleRepo.db.Raw(`
+select 
+  a.article_id, 
+  a.article_title, 
+  a.article_content, 
+  group_concat(
+    att.topic_name 
+    order by 
+      att.article_topic_id separator '/'
+  ) as article_topics, 
+  a.created_user_id, 
+  a.created_date, 
+  a.updated_date, 
+  a.deleted_date 
+from 
+  (
+-- いいねした記事一覧(トピックなし)
+    select 
+      liked_articles.* 
+    from 
+      (
+        select 
+          _a.* 
+        from 
+          articles as _a 
+          inner join(
+-- ログインユーザが取得出来る記事ID一覧
+            select 
+              case 
+              	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+              	when is_private = 0 and is_deleted = 0 then article_id 
+              end as article_id 
+            from 
+              articles 
+            having 
+              article_id is not null 
+            order by 
+              created_date desc
+          ) as sub_a on _a.article_id = sub_a.article_id
+      ) as liked_articles 
+      inner join (
+        select 
+          * 
+        from 
+          likes 
+        where 
+          user_id = ?
+      ) as l on liked_articles.article_id = l.article_id 
+    limit 
+      10 offset ?
+  ) as a, 
+  (
+    select 
+      at.article_topic_id, 
+      at.article_id, 
+      t.topic_name 
+    from 
+      article_topics as at 
+      left join topics as t on at.topic_id = t.topic_id
+  ) as att 
+where 
+  a.article_id = att.article_id 
+group by 
+  a.article_id 
+order by 
+  created_date desc
+;
+`, loginUserID, userID, offset).Rows()
+
+	defer rows.Close()
+	for rows.Next() {
+		article := model.Article{}
+		err = articleRepo.db.ScanRows(rows, &article)
+		if err == nil {
+			articles = append(articles, article)
+		}
+	}
+
+	// レコードがない場合
+	if len(articles) == 0 {
+		return nil, 1, errors.New("record not found")
+	}
+
+	var count int
+	row := articleRepo.db.Raw(`
+select 
+  count(*) 
+from 
+  (
+    select 
+      a.* 
+    from 
+      articles as a 
+      inner join (
+        select 
+          case 
+          	when is_private = 1 and created_user_id = ? and is_deleted = 0 then article_id 
+          	when is_private = 0 and is_deleted = 0 then article_id 
+          end as article_id 
+        from 
+          articles 
+        having 
+          article_id is not null
+      ) as sub_a on a.article_id = sub_a.article_id
+  ) as articles 
+  inner join (
+    select 
+      * 
+    from 
+      likes 
+    where 
+      user_id = ? 
+  ) as l on articles.article_id = l.article_id
+;
+	`, loginUserID, userID).Row()
+	row.Scan(&count)
+	if (count % 10) == 0 {
+		allPagingNum = count / 10
+	} else {
+		allPagingNum = (count / 10) + 1
+	}
+
+	return
+}
+
 // 特定のトピックを含む全記事を取得
 func (articleRepo *articleInfraStruct) FindArticlesByTopicId(articleIds []model.ArticleTopic, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error) {
 	offset := (refPg - 1) * 10

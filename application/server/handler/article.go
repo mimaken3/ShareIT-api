@@ -300,6 +300,53 @@ func FindArticlesByUserId() echo.HandlerFunc {
 	}
 }
 
+// 特定のユーザのいいねした記事を取得(ページング)
+func FindAllLikedArticlesByUserID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// ページング番号を取得
+		refPg, _ := strconv.Atoi(c.QueryParam("ref_pg"))
+
+		if refPg == 0 {
+			refPg = 1
+		}
+
+		// ログイン中のユーザIDを取得
+		intUserID, _ := strconv.Atoi(c.QueryParam("user_id"))
+		loginUserID := uint(intUserID)
+
+		// 取得する記事のユーザIDを取得
+		_userID, _ := strconv.Atoi(c.Param("user_id"))
+		userID := uint(_userID)
+
+		articles, allPagingNum, err := articleService.FindAllLikedArticlesByUserID(userID, loginUserID, refPg)
+		var articlesResult ArticlesResult
+
+		if err != nil {
+			articlesResult.IsSearched = false
+			articlesResult.SearchUser = loginUserID
+			articlesResult.SearchTopics = "0"
+			articlesResult.IsEmpty = true
+			articlesResult.AllPagingNum = allPagingNum
+			articlesResult.Articles = articles
+
+			return c.JSON(http.StatusOK, articlesResult)
+		}
+
+		// 各記事にいいね情報を付与
+		updatedArticles, err := likeService.GetLikeInfoByArtiles(loginUserID, articles)
+
+		articlesResult.IsSearched = false
+		articlesResult.SearchUser = loginUserID
+		articlesResult.SearchTopics = "0"
+		articlesResult.IsEmpty = false
+		articlesResult.RefPg = refPg
+		articlesResult.AllPagingNum = allPagingNum
+		articlesResult.Articles = updatedArticles
+
+		return c.JSON(http.StatusOK, articlesResult)
+	}
+}
+
 // 特定のトピックを含む記事を取得
 func FindArticlesByTopicId() echo.HandlerFunc {
 	return func(c echo.Context) error {

@@ -58,6 +58,9 @@ func InitRouting(e *echo.Echo) {
 	// 特定のユーザの全記事を取得(トピック: 文字列区切り)
 	userG.GET("/:user_id/articles", handler.FindArticlesByUserId())
 
+	// 特定のユーザのいいねした記事を取得(ページング)
+	userG.GET("/:user_id/like/articles", handler.FindAllLikedArticlesByUserID())
+
 	// 記事を投稿
 	userG.POST("/:user_id/createArticle", handler.CreateArticle())
 

@@ -29,6 +29,9 @@ type ArticleServiceInterface interface {
 	// 特定のユーザの全記事を取得(ページング)
 	FindArticlesByUserIdService(userID uint, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
 
+	// 特定のユーザのいいねした記事を取得(ページング)
+	FindAllLikedArticlesByUserID(userID uint, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
+
 	// 特定のトピックを含む記事を取得
 	FindArticlesByTopicIdService(articleIds []model.ArticleTopic, loginUserID uint, refPg int) (articles []model.Article, allPagingNum int, err error)
 
