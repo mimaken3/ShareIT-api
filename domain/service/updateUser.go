@@ -10,6 +10,8 @@ func (u *userServiceStruct) UpdateUser(userID uint) (updatedUser model.User, err
 	}
 	updatedUser, err = u.userRepo.FindUserByUserId(int(userID))
 
+	updatedUser.Email = ""
+
 	// パスワードを隠す
 	updatedUser.Password = ""
 

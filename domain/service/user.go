@@ -14,6 +14,9 @@ type UserServiceInterface interface {
 	// 全ユーザを取得(ページング)
 	FindAllUsersService(refPg int) (users []model.User, allPagingNum int, err error)
 
+	// 全ユーザを取得(セレクトボックス)
+	FindAllUsersForSelectBox(userID uint) (users []model.User, err error)
+
 	// ユーザ登録のチェック
 	CheckUserInfoService(checkUser model.User) (resultUserInfo model.CheckUserInfo, err error)
 

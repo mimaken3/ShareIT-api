@@ -55,6 +55,36 @@ func FindAllUsers() echo.HandlerFunc {
 	}
 }
 
+// 全ユーザを取得(セレクトボックス)
+func FindAllUsersForSelectBox() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// ユーザIDを取得
+		_userID, _ := strconv.Atoi(c.Param("user_id"))
+		userID := uint(_userID)
+		users, err := userService.FindAllUsersForSelectBox(userID)
+
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
+		var usersResult UsersResult
+		if err != nil {
+			usersResult.IsEmpty = true
+			usersResult.AllPagingNum = 0
+			usersResult.Users = users
+
+			return c.JSON(http.StatusOK, usersResult)
+		}
+
+		usersResult.IsEmpty = false
+		usersResult.RefPg = 0
+		usersResult.AllPagingNum = 0
+		usersResult.Users = users
+
+		return c.JSON(http.StatusOK, usersResult)
+	}
+}
+
 // ユーザ登録のチェック
 func CheckUserInfo() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -75,6 +105,12 @@ func FindUserByUserId() echo.HandlerFunc {
 		// ユーザIDを取得
 		userId, _ := strconv.Atoi(c.Param("user_id"))
 		user, err := userService.FindUserByUserIdService(userId)
+
+		// adminチェック
+		// userJWT := c.Get("user").(*jwt.Token)
+		// claims := userJWT.Claims.(*jwtCustomClaims)
+		// fmt.Println(claims.Name)
+		// fmt.Println(claims.UID)
 
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err.Error())
@@ -126,10 +162,18 @@ func Login() echo.HandlerFunc {
 		if message == "success" {
 			// 成功
 
+			var isAdmin bool
+			if resultUser.UserID == 1 {
+				isAdmin = true
+			} else {
+				isAdmin = false
+			}
+
 			// Set claims
 			claims := &jwtCustomClaims{
 				resultUser.UserID,
 				resultUser.UserName,
+				isAdmin,
 				jwt.StandardClaims{
 					ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 				},
@@ -154,7 +198,7 @@ func Login() echo.HandlerFunc {
 		api.Token = ""
 		api.Code = 500
 		api.Message = message
-		api.User = resultUser
+		api.User = user
 
 		return c.JSON(http.StatusBadRequest, api)
 	}
@@ -222,27 +266,25 @@ func UpdateUserByUserId() echo.HandlerFunc {
 // ユーザを削除
 func DeleteUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
-		willBeDeletedUser := model.User{}
-
-		if err := c.Bind(&willBeDeletedUser); err != nil {
-			return err
-		}
-
 		// ユーザIDを取得
-		userID, _ := strconv.Atoi(c.Param("user_id"))
-
-		// パラメータのIDと受け取ったモデルのIDが違う場合、エラーを返す
-		if uint(userID) != willBeDeletedUser.UserID {
-			return c.String(http.StatusBadRequest, "param userID and send user id are different")
-		}
+		_userID, _ := strconv.Atoi(c.Param("user_id"))
+		userID := uint(_userID)
 
 		// TODO: err処理
 		// ユーザを削除
-		_ = userService.DeleteUser(willBeDeletedUser.UserID)
+		_ = userService.DeleteUser(userID)
 
 		// プロフィールを削除
 		_ = profileService.DeleteProfileByUserID(uint(userID))
+
+		// ユーザの記事を全削除
+		_ = articleService.DeleteArticleByUserID(userID)
+
+		// ユーザのコメントを全削除
+		_ = commentService.DeleteCommentByUserID(userID)
+
+		// ユーザが付けたいいねを全削除
+		_ = likeService.DeleteLikeByUserID(userID)
 
 		return c.String(http.StatusOK, "delete success")
 	}

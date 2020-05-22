@@ -79,7 +79,7 @@ group by
 ) as ddd
 left join profiles as p on (ddd.user_id = p.user_id) 
 left join icons as i on (ddd.user_id = i.user_id)
-order by ddd.user_id
+order by ddd.created_date desc
 limit 10 offset ?
 ;
 	`, offset).Rows()
@@ -100,8 +100,22 @@ limit 10 offset ?
 
 	var count int
 	userRepo.db.Table("users").Where("is_deleted = 0").Count(&count)
-	allPagingNum = (count / 11) + 1
+	if (count % 10) == 0 {
+		allPagingNum = count / 10
+	} else {
+		allPagingNum = (count / 10) + 1
+	}
 
+	return
+}
+
+// 全ユーザを取得(セレクトボックス)
+func (userRepo *userInfraStruct) FindAllUsersForSelectBox() (users []model.User, err error) {
+	if result := userRepo.db.Select("user_id, user_name, created_date").Where("is_deleted = 0").Order("created_date desc").Find(&users); result.Error != nil {
+		// レコードがない場合
+		err = result.Error
+		return
+	}
 	return
 }
 
@@ -141,16 +155,14 @@ func (userRepo *userInfraStruct) DeleteUser(userID uint) (err error) {
 		return
 	}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	deleteTime := time.Now().Format(dateFormat)
-	customisedDeleteTime, _ := time.Parse(dateFormat, deleteTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
 	// 削除状態に更新
 	userRepo.db.Model(&deleteUser).
 		Where("user_id= ? AND is_deleted = ?", userID, 0).
 		Updates(map[string]interface{}{
-			"deleted_date": customisedDeleteTime,
+			"deleted_date": currentDate,
 			"is_deleted":   int8(1),
 		})
 
@@ -199,6 +211,8 @@ from
   ) as dd on (dd.user_id = u.user_id) 
 where 
   u.user_name = ? 
+	AND u.is_deleted = 0
+	;
 	`, user.UserName).Scan(&resultUser)
 
 	if result.Error != nil {
@@ -260,7 +274,9 @@ from
       td.user_id
   ) as dd on (dd.user_id = u.user_id) 
 where 
-  u.user_id = ?;
+  u.user_id = ?
+  AND u.is_deleted = 0
+;
 `, userId).Scan(&user)
 
 	if result.Error != nil {
@@ -277,27 +293,22 @@ func (userRepo *userInfraStruct) SignUpUser(user model.User, lastUserId uint) (m
 
 	signUpUser := SignUpUser{}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	nowTime := time.Now().Format(dateFormat)
-	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
-
-	const defaultDeletedDateStr = "9999-12-31 23:59:59"
-	defaultDeletedDate, _ := time.Parse(dateFormat, defaultDeletedDateStr)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, defaultDeletedDate := getDate()
 
 	signUpUser.UserID = lastUserId + 1
 	signUpUser.UserName = user.UserName
 	signUpUser.Email = user.Email
 	signUpUser.Password = user.Password
-	signUpUser.CreatedDate = customisedNowTime
-	signUpUser.UpdatedDate = customisedNowTime
+	signUpUser.CreatedDate = currentDate
+	signUpUser.UpdatedDate = currentDate
 	signUpUser.DeletedDate = defaultDeletedDate
 
 	userRepo.db.Create(&signUpUser)
 
 	user.UserID = lastUserId + 1
-	user.CreatedDate = customisedNowTime
-	user.UpdatedDate = customisedNowTime
+	user.CreatedDate = currentDate
+	user.UpdatedDate = currentDate
 	user.DeletedDate = defaultDeletedDate
 
 	// セキュリティのためパスワードは返さない
@@ -389,12 +400,10 @@ func (userRepo *userInfraStruct) DeleteTopicFromInterestedTopics(deleteTopicID u
 func (userRepo *userInfraStruct) UpdateUser(userID uint) (err error) {
 	user := model.User{}
 
-	// 現在の日付を取得
-	const dateFormat = "2006-01-02 15:04:05"
-	nowTime := time.Now().Format(dateFormat)
-	customisedNowTime, _ := time.Parse(dateFormat, nowTime)
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
 
-	userRepo.db.Model(&user).Where("user_id = ?", userID).Update("updated_date", customisedNowTime)
+	userRepo.db.Model(&user).Where("user_id = ?", userID).Update("updated_date", currentDate)
 
 	return
 }

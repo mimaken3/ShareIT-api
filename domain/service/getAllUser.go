@@ -17,6 +17,8 @@ func (u *userServiceStruct) FindAllUsersService(refPg int) (users []model.User, 
 		// 署名付きURLを取得
 		users[i].IconName, err = GetPreSignedURL(users[i].IconName)
 
+		users[i].Email = ""
+
 		// セキュリティのためパスワードを返さない
 		users[i].Password = ""
 	}
