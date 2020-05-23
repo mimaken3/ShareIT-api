@@ -276,7 +276,7 @@ func FindArticlesByUserId() echo.HandlerFunc {
 		articles, allPagingNum, err := articleService.FindArticlesByUserIdService(uintUserID, loginUserID, refPg)
 		if err != nil {
 			articlesResult.IsSearched = false
-			articlesResult.SearchUser = loginUserID
+			articlesResult.SearchUser = 0
 			articlesResult.SearchTopics = "0"
 			articlesResult.IsEmpty = true
 			articlesResult.AllPagingNum = allPagingNum
@@ -289,7 +289,7 @@ func FindArticlesByUserId() echo.HandlerFunc {
 		updatedArticles, err := likeService.GetLikeInfoByArtiles(loginUserID, articles)
 
 		articlesResult.IsSearched = false
-		articlesResult.SearchUser = loginUserID
+		articlesResult.SearchUser = 0
 		articlesResult.SearchTopics = "0"
 		articlesResult.IsEmpty = false
 		articlesResult.RefPg = refPg
