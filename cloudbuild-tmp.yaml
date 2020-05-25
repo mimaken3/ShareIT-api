@@ -1,0 +1,4 @@
+steps:
+- name: "gcr.io/cloud-builders/gcloud"
+  # args: ["app", "deploy",'app.yaml', '--project', 'shareit-part2-pro']
+  args: ["app", "deploy", '--project', 'shareit-part2-pro']
