@@ -1,8 +1,8 @@
 steps:
 # - name: 'ubuntu'
 #   args: ['echo', 'hello world']
-- name: "ubuntu"
-  args: ["printenv", ">", ".env"] 
+- name: 'ubuntu'
+  args: ['printenv', '>', '.env'] 
   env:
     - "SECRET_KEY=${_SECRET_KEY}"
     - "PROTOCOL=${_PROTOCOL}"
