@@ -1,4 +1,7 @@
 steps:
 - name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=secret-data > decrypted-data.txt' ]
+- name: "gcr.io/cloud-builders/gcloud"
   # args: ["app", "deploy",'app.yaml', '--project', 'shareit-part2-pro']
   args: ["app", "deploy", '--project', 'shareit-part2-pro']
