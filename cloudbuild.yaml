@@ -1,7 +1,28 @@
 steps:
 - name: "gcr.io/cloud-builders/gcloud"
   entrypoint: 'bash'
-  args: [ '-c', 'gcloud secrets versions access latest --secret=secret-data > decrypted-data.txt' ]
+  args: [ '-c', 'gcloud secrets versions access latest --secret=PROTOCOL' ]
+- name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=CLOUD_SQL_CONNECTION' ]
+- name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=DB_PASSWORD' ]
+- name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=DB_USER' ]
+- name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=DBNAME' ]
+- name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=SECRET_KEY' ]
+- name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=AWS_S3_ACCESS_KEY_ID' ]
+- name: "gcr.io/cloud-builders/gcloud"
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=AWS_S3_SECRET_ACCESS_KEY' ]
 - name: "gcr.io/cloud-builders/gcloud"
   # args: ["app", "deploy",'app.yaml', '--project', 'shareit-part2-pro']
   args: ["app", "deploy", '--project', 'shareit-part2-pro']
