@@ -1,6 +1,6 @@
 steps:
-- name: 'ubuntu'
-  args: ['echo', 'hello world']
+# - name: 'ubuntu'
+#   args: ['echo', 'hello world']
 - name: "ubuntu"
   args: ["printenv", ">", ".env"] 
   env:
