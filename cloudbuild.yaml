@@ -7,15 +7,10 @@ steps:
   args: ["run", "create-env"]
   env:
     - "SECRET_KEY=${_SECRET_KEY}"
-    # - "PROTOCOL=${_PROTOCOL}"
     - "PORT=${_PORT}"
-    # - "DBNAME=${_DBNAME}"
-    # - "DB_USER=${_DB_USER}"
-    # - "DB_PASSWORD=${_DB_PASSWORD}"
     - "CLOUD_SQL_CONNECTION=${_CLOUD_SQL_CONNECTION}"
     - "AWS_S3_SECRET_ACCESS_KEY=${_AWS_S3_SECRET_ACCESS_KEY}"
     - "AWS_S3_ACCESS_KEY_ID=${_AWS_S3_ACCESS_KEY_ID}"
     - "PROD_BUCKET_NAME=${_PROD_BUCKET_NAME}"
 - name: "gcr.io/cloud-builders/gcloud"
-  # args: ["app", "deploy",'app.yaml', '--project', 'shareit-part2-pro']
-  args: ["app", "deploy", '--project', 'shareit-part2-pro']
+  args: ["app", "deploy", '--project', 'share-it-server-prod']
