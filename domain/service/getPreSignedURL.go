@@ -8,13 +8,23 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"google.golang.org/appengine"
 )
 
 func GetPreSignedURL(iconName string) (preSignedURL string, err error) {
+	var bucketName string
+
+	if appengine.IsAppEngine() {
+		// 本番
+		bucketName = os.Getenv("PROD_BUCKET_NAME")
+	} else {
+		// 開発
+		bucketName = os.Getenv("DEV_BUCKET_NAME")
+	}
+
 	accessKey := os.Getenv("AWS_S3_ACCESS_KEY_ID")
 	secretAccessKey := os.Getenv("AWS_S3_SECRET_ACCESS_KEY")
 	region := "ap-northeast-1"
-	bucketName := "share-it-test"
 
 	s3Config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials(accessKey, secretAccessKey, ""),
