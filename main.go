@@ -17,8 +17,10 @@ import (
 func main() {
 	e := echo.New()
 
+	// CORS
 	e.Use(middleware.CORS())
 
+	// 認証チェック
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(os.Getenv("SECRET_KEY")))))
 
 	server.InitRouting(e)
