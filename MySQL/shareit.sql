@@ -24,7 +24,8 @@ CREATE TABLE topics(
   updated_date DATETIME NOT NULL,
   deleted_date DATETIME NOT NULL, 
   is_deleted TINYINT(1) NOT NULL DEFAULT '0'
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+;
 
 -- 記事
 DROP TABLE IF EXISTS articles;
