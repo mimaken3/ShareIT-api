@@ -42,6 +42,11 @@ func FindAllArticles() echo.HandlerFunc {
 		var articlesResult ArticlesResult
 		articles, allPagingNum, err := articleService.FindAllArticlesService(refPg, userID)
 
+		for i := 0; i < len(articles); i++ {
+			// ユーザIDから署名付きURLを取得
+			articles[i].IconName, err = iconService.GetPreSignedURLByUserID(articles[i].CreatedUserID)
+		}
+
 		if err != nil {
 			// １つもなかった場合
 			articlesResult.IsSearched = false
@@ -88,6 +93,11 @@ func SearchAllArticles() echo.HandlerFunc {
 
 		var articlesResult ArticlesResult
 		searchedArticles, allPagingNum, err := articleService.SearchAllArticles(refPg, userID, loginUserID, topicIDStr)
+
+		for i := 0; i < len(searchedArticles); i++ {
+			// ユーザIDから署名付きURLを取得
+			searchedArticles[i].IconName, err = iconService.GetPreSignedURLByUserID(searchedArticles[i].CreatedUserID)
+		}
 
 		if err != nil {
 			// １つもなかった場合

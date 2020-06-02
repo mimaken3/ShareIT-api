@@ -10,6 +10,7 @@ type Article struct {
 	IsLiked        bool      `json:"is_liked"`
 	LikeNum        int       `json:"like_num"`
 	CreatedUserID  uint      `json:"created_user_id"`
+	IconName       string    `gorm:"size:500" json:"icon_name"`
 	CreatedDate    time.Time `json:"created_date"`
 	UpdatedDate    time.Time `json:"updated_date"`
 	DeletedDate    time.Time `json:"deleted_date"`
