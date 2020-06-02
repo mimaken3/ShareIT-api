@@ -12,5 +12,6 @@ func (a *articleServiceStruct) FindAllArticlesService(refPg int, userID uint) (a
 	if err != nil {
 		log.Println(err)
 	}
+
 	return articles, allPagingNum, err
 }
