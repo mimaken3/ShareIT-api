@@ -284,6 +284,12 @@ func FindArticlesByUserId() echo.HandlerFunc {
 		var articlesResult ArticlesResult
 
 		articles, allPagingNum, err := articleService.FindArticlesByUserIdService(uintUserID, loginUserID, refPg)
+
+		for i := 0; i < len(articles); i++ {
+			// ユーザIDから署名付きURLを取得
+			articles[i].IconName, err = iconService.GetPreSignedURLByUserID(articles[i].CreatedUserID)
+		}
+
 		if err != nil {
 			articlesResult.IsSearched = false
 			articlesResult.SearchUser = 0
@@ -329,6 +335,11 @@ func FindAllLikedArticlesByUserID() echo.HandlerFunc {
 		userID := uint(_userID)
 
 		articles, allPagingNum, err := articleService.FindAllLikedArticlesByUserID(userID, loginUserID, refPg)
+		for i := 0; i < len(articles); i++ {
+			// ユーザIDから署名付きURLを取得
+			articles[i].IconName, err = iconService.GetPreSignedURLByUserID(articles[i].CreatedUserID)
+		}
+
 		var articlesResult ArticlesResult
 
 		if err != nil {
@@ -382,6 +393,11 @@ func FindArticlesByTopicId() echo.HandlerFunc {
 		var articlesResult ArticlesResult
 
 		articles, allPagingNum, err := articleService.FindArticlesByTopicIdService(articleIds, loginUserID, refPg)
+		for i := 0; i < len(articles); i++ {
+			// ユーザIDから署名付きURLを取得
+			articles[i].IconName, err = iconService.GetPreSignedURLByUserID(articles[i].CreatedUserID)
+		}
+
 		if err != nil {
 			articlesResult.IsSearched = false
 			articlesResult.SearchUser = 0
