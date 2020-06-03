@@ -8,10 +8,10 @@ type LikeRepository interface {
 	GetLastLikeID() (lastLikeID uint, err error)
 
 	// いいねを追加
-	AddLike(userID uint, articleID uint, lastLikeID uint) (err error)
+	AddLike(userID uint, articleID uint, lastLikeID uint) (likeID uint, err error)
 
 	// いいねを外す
-	DeleteLike(userID uint, articleID uint) (err error)
+	DeleteLike(userID uint, articleID uint) (likeID uint, err error)
 
 	// 各記事のいいね情報を取得
 	GetLikeInfoByArtiles(userID uint, articles []model.Article) (isLiked []bool, likeNum []int, err error)

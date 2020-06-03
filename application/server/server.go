@@ -65,6 +65,16 @@ func InitRouting(e *echo.Echo) {
 	userG.POST("/:user_id/createArticle", handler.CreateArticle())
 
 	// ==========
+	// || 通知 ||
+	// ==========
+
+	// ユーザの通知一覧を取得
+	userG.GET("/:user_id/notifications", handler.FindAllNotificationsByUserID())
+
+	// 通知を既読
+	// userG.PUT("/:user_id/notifications", handler.ReadNotificationByUserID())
+
+	// ==========
 	// || 記事 ||
 	// ==========
 	articleG := apiG.Group("/articles")
