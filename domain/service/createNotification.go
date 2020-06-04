@@ -5,7 +5,10 @@ func (n *notificationServiceStruct) CreateNotification(sourceUserID uint, notifi
 	// 最後の通知IDを取得
 	lastNotificationID, _ := n.notificationRepo.FindLastNotificationID()
 
+	// 最後の通知元情報IDを取得
+	lastDestinationID, _ := n.notificationRepo.FindLastDestinationID()
+
 	// 通知を追加
-	notificationID, err = n.notificationRepo.CreateNotification(sourceUserID, notificationType, typeID, articleID, lastNotificationID)
+	notificationID, err = n.notificationRepo.CreateNotification(sourceUserID, notificationType, typeID, articleID, lastNotificationID, lastDestinationID)
 	return
 }

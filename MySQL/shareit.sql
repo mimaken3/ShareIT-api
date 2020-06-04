@@ -118,9 +118,40 @@ CREATE TABLE notifications(
   source_user_id INT UNSIGNED NOT NULL,
   source_user_icon_name VARCHAR(500) NOT NULL,
   is_read TINYINT(1) NOT NULL DEFAULT '0',
-  notification_type INT UNSIGNED NOT NULL,
-  article_id INT UNSIGNED NOT NULL DEFAULT 0,
-  comment_id INT UNSIGNED NOT NULL DEFAULT 0,
-  like_id INT UNSIGNED NOT NULL DEFAULT 0, 
+  destination_id INT UNSIGNED NOT NULL,
   created_date DATETIME NOT NULL
 );
+
+-- 通知元名
+DROP TABLE IF EXISTS destination_types;
+
+CREATE TABLE destination_types(
+  destination_type_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  destination_type_name VARCHAR(255) NOT NULL
+);
+INSERT INTO destination_types VALUES(1, 'ユーザ詳細画面');
+INSERT INTO destination_types VALUES(2, 'ユーザ一覧画面');
+INSERT INTO destination_types VALUES(3, '記事詳細画面');
+INSERT INTO destination_types VALUES(4, '記事一覧画面');
+
+-- 通知元情報 
+DROP TABLE IF EXISTS destinations;
+
+CREATE TABLE destinations(
+  destination_id INT UNSIGNED NOT NULL PRIMARY KEY,
+  destination_type_id INT UNSIGNED NOT NULL,
+  destination_type_name_id INT UNSIGNED NOT NULL,
+  behavior_type_id INT UNSIGNED NOT NULL,
+  behavior_type_name_id INT UNSIGNED NOT NULL
+);
+
+-- 通知することになったユーザの動作
+DROP TABLE IF EXISTS behavior_types;
+
+CREATE TABLE behavior_types(
+  behavior_type_id INT UNSIGNED NOT NULL,
+  behavior_type_name VARCHAR(255) NOT NULL
+);
+INSERT INTO behavior_types VALUES(1, 'いいね');
+INSERT INTO behavior_types VALUES(2, 'コメント書き込み');
+
