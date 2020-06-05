@@ -111,6 +111,7 @@ func (notificationRepo *notificationInfraStruct) FindLastDestinationID() (lastDe
 }
 
 // 通知を追加
+// typeIDはlike_id or comment_id
 func (notificationRepo *notificationInfraStruct) CreateNotification(sourceUserID uint, notificationType uint, typeID uint, articleID uint, lastNotificationID uint, lastDestinationID uint) (notificationID uint, err error) {
 	var notification model.Notification
 	var destination model.Destination
@@ -214,8 +215,48 @@ where
 		// notificationRepo.db.Model(&like).Where("like_id = ?", typeID).Update("notification_id", notificationID)
 	} else if notificationType == 2 {
 		// コメントの通知を作成する場合
-		// notification.ArticleID = articleID
-		// notification.CommentID = typeID
+
+		// コメントされた記事を作成したユーザIDを取得
+		result := notificationRepo.db.Raw(`
+select 
+  created_user_id 
+from 
+  articles 
+where 
+  article_id = (
+    select 
+      article_id 
+    from 
+      comments 
+    where 
+      comment_id = ? 
+  )
+;
+`, typeID).Scan(&article)
+
+		if result.Error != nil {
+			// レコードがない場合
+			// TODO: Do something
+			// err = result.Error
+		}
+		createdArticleUserID := article.CreatedUserID
+
+		// コメントに通知IDを付与するための宣言
+		var comment model.Comment
+		comment.CommentID = typeID
+
+		// いいねに通知IDを付与
+		notificationRepo.db.Model(&comment).Update("notification_id", notificationID)
+
+		notification.UserID = createdArticleUserID
+		notification.SourceUserID = sourceUserID
+
+		// 目的地を保存
+		destination.DestinationTypeID = 1 // 1: ユーザ詳細画面
+		destination.DestinationTypeNameID = articleID
+		destination.BehaviorTypeID = 2 // 2: コメントをする
+		destination.BehaviorTypeNameID = typeID
+		notificationRepo.db.Create(&destination)
 	}
 
 	// 保存

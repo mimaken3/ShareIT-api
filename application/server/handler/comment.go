@@ -22,6 +22,9 @@ func CreateComment() echo.HandlerFunc {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
 
+		// コメントした場合、通知を作成(2はコメントのタイプID)
+		_, _ = notificationService.CreateNotification(createdComment.UserID, 2, createdComment.CommentID, createdComment.ArticleID)
+
 		return c.JSON(http.StatusOK, createdComment)
 	}
 }
