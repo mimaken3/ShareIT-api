@@ -129,10 +129,10 @@ CREATE TABLE destination_types(
   destination_type_id INT UNSIGNED NOT NULL PRIMARY KEY,
   destination_type_name VARCHAR(255) NOT NULL
 );
-INSERT INTO destination_types VALUES(1, 'ユーザ詳細画面');
-INSERT INTO destination_types VALUES(2, 'ユーザ一覧画面');
-INSERT INTO destination_types VALUES(3, '記事詳細画面');
-INSERT INTO destination_types VALUES(4, '記事一覧画面');
+INSERT INTO destination_types VALUES(1, '記事詳細画面');
+INSERT INTO destination_types VALUES(2, '記事一覧画面');
+INSERT INTO destination_types VALUES(3, 'ユーザ詳細画面');
+INSERT INTO destination_types VALUES(4, 'ユーザ一覧画面');
 
 -- 通知元情報 
 DROP TABLE IF EXISTS destinations;

@@ -12,12 +12,13 @@ type notificationServiceStruct struct {
 // Application層はこのInterfaceに依存
 type NotificationServiceInterface interface {
 	// ユーザの通知一覧を取得
-	FindAllNotificationsByUserID(userID uint) (notifications []model.Notification, err error)
+	FindAllNotificationsByUserID(userID uint) (resultNotifications []model.ResultNotification, err error)
 
 	// 通知を追加
 	CreateNotification(sourceUserID uint, notificationType uint, typeID uint, articleID uint) (notificationID uint, err error)
 
-	// 通知を削除
+	// 通知の未読を既読にする
+	ReadNotificationByNotificationID(notificationID uint) (resultNotification model.ResultNotification, err error)
 }
 
 // DIのための関数

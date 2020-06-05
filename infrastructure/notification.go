@@ -1,6 +1,8 @@
 package infrastructure
 
 import (
+	"errors"
+
 	"github.com/jinzhu/gorm"
 	"github.com/mimaken3/ShareIT-api/domain/model"
 	"github.com/mimaken3/ShareIT-api/domain/repository"
@@ -25,7 +27,58 @@ func NewNotificationDB(db *gorm.DB) repository.NotificationRepository {
 }
 
 // ユーザの通知一覧を取得
-func (notificationRepo *notificationInfraStruct) FindAllNotificationsByUserID(userID uint) (notifications []model.Notification, err error) {
+func (notificationRepo *notificationInfraStruct) FindAllNotificationsByUserID(userID uint) (resultNotifications []model.ResultNotification, err error) {
+	rows, err :=
+		notificationRepo.db.Raw(`
+select 
+  sub_n.notification_id, 
+  sub_n.user_id, 
+  sub_n.user_name as source_user_name, 
+  sub_n.source_user_id, 
+  sub_n.source_user_icon_name, 
+  sub_n.is_read, 
+  d.destination_type_id, 
+  d.destination_type_name_id, 
+  d.behavior_type_id, 
+  d.behavior_type_name_id, 
+  sub_n.created_date 
+from 
+  (
+    select 
+      n.*, 
+      u.user_name 
+    from 
+      (
+        select 
+          * 
+        from 
+          notifications 
+        where 
+          notifications.user_id = ? 
+          and notifications.source_user_id != ? 
+      ) as n 
+      left join users as u on n.source_user_id = u.user_id
+  ) as sub_n 
+  left join destinations as d on sub_n.destination_id = d.destination_id 
+order by 
+  sub_n.created_date desc
+;
+		`, userID, userID).Rows()
+
+	defer rows.Close()
+	for rows.Next() {
+		resultNotification := model.ResultNotification{}
+		err = notificationRepo.db.ScanRows(rows, &resultNotification)
+		if err == nil {
+			resultNotifications = append(resultNotifications, resultNotification)
+		}
+	}
+
+	// レコードがない場合
+	if len(resultNotifications) == 0 {
+		return nil, errors.New("record not found")
+	}
+
 	return
 }
 
@@ -115,7 +168,7 @@ from
 where 
   user_id = ? 
   and source_user_id = ? 
-  and destination_id = (
+  and destination_id in (
     select 
       destination_id 
     from 
@@ -167,6 +220,37 @@ where
 
 	// 保存
 	notificationRepo.db.Create(&notification)
+
+	return
+}
+
+// 通知の未読を既読にする
+func (notificationRepo *notificationInfraStruct) ReadNotificationByNotificationID(notificationID uint) (resultNotification model.ResultNotification, err error) {
+	var notification model.Notification
+	notification.NotificationID = notificationID
+	notificationRepo.db.Model(&notification).Update("is_read", int8(1))
+
+	notificationRepo.db.Raw(`
+select 
+  n.notification_id, 
+  n.user_id, 
+  u.user_name as source_user_name, 
+  n.source_user_id, 
+  n.source_user_icon_name, 
+  n.is_read, 
+  d.destination_type_id, 
+  d.destination_type_name_id, 
+  d.behavior_type_id, 
+  d.behavior_type_name_id,
+  n.created_date
+from 
+  notifications as n 
+  left join users as u on n.source_user_id = u.user_id 
+  left join destinations as d on n.destination_id = d.destination_id 
+where 
+  notification_id = ? 
+;
+	`, notificationID).Scan(&resultNotification)
 
 	return
 }

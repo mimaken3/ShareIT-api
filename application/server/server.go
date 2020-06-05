@@ -71,8 +71,8 @@ func InitRouting(e *echo.Echo) {
 	// ユーザの通知一覧を取得
 	userG.GET("/:user_id/notifications", handler.FindAllNotificationsByUserID())
 
-	// 通知を既読
-	// userG.PUT("/:user_id/notifications", handler.ReadNotificationByUserID())
+	// 通知の未読を既読に
+	userG.PUT("/:user_id/notifications", handler.ReadNotificationByNotificationID())
 
 	// ==========
 	// || 記事 ||
