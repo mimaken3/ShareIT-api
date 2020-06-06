@@ -25,6 +25,11 @@ type UsersResult struct {
 	Users        []model.User `json:"users"`
 }
 
+type TopicsResult struct {
+	IsEmpty bool          `json:"is_empty"`
+	Topics  []model.Topic `json:"topics"`
+}
+
 // 全ユーザを取得
 func FindAllUsers() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -298,5 +303,25 @@ func FindLastUserId() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, err.Error())
 		}
 		return c.JSON(http.StatusOK, lastUserId)
+	}
+}
+
+// ユーザが作成したトピックを取得
+func FindCreatedTopicsByUserID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		_userID, _ := strconv.Atoi(c.Param("user_id"))
+		var userID uint = uint(_userID)
+
+		topics, _ := topicService.FindCreatedTopicsByUserID(userID)
+		var topicsResult TopicsResult
+
+		topicsResult.Topics = topics
+		if len(topics) > 0 {
+			topicsResult.IsEmpty = false
+		} else {
+			topicsResult.IsEmpty = true
+		}
+
+		return c.JSON(http.StatusOK, topicsResult)
 	}
 }

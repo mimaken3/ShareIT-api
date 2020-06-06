@@ -61,6 +61,9 @@ func InitRouting(e *echo.Echo) {
 	// 特定のユーザのいいねした記事を取得(ページング)
 	userG.GET("/:user_id/like/articles", handler.FindAllLikedArticlesByUserID())
 
+	// ユーザが作成したトピックを取得
+	userG.GET("/:user_id/topics", handler.FindCreatedTopicsByUserID())
+
 	// 記事を投稿
 	userG.POST("/:user_id/createArticle", handler.CreateArticle())
 

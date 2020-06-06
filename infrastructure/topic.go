@@ -107,3 +107,15 @@ func (topicRepo *topicInfraStruct) DeleteTopicByTopicID(uintTopicID uint) (err e
 
 	return nil
 }
+
+// ユーザが作成したトピックを取得
+func (topicRepo *topicInfraStruct) FindCreatedTopicsByUserID(userID uint) (topics []model.Topic, err error) {
+	topics = []model.Topic{}
+
+	if userID == 1 {
+		topicRepo.db.Where("is_deleted = 0").Order("created_date desc").Find(&topics)
+	} else {
+		topicRepo.db.Where("proposed_user_id = ? and is_deleted = 0", userID).Order("created_date desc").Find(&topics)
+	}
+	return
+}

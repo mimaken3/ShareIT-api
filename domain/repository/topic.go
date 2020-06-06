@@ -18,4 +18,7 @@ type TopicRepository interface {
 
 	// トピックを削除
 	DeleteTopicByTopicID(uintTopicID uint) (err error)
+
+	// ユーザが作成したトピックを取得
+	FindCreatedTopicsByUserID(userID uint) (topics []model.Topic, err error)
 }
