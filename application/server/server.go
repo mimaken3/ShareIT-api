@@ -129,6 +129,8 @@ func InitRouting(e *echo.Echo) {
 	// || トピック||
 	// =============
 	topicG := apiG.Group("/topics")
+	// トピック名の重複チェック
+	topicG.POST("/check", handler.CheckTopicName())
 
 	// トピックを作成
 	topicG.POST("/create", handler.CreateTopic())

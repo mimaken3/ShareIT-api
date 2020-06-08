@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 	"github.com/mimaken3/ShareIT-api/domain/model"
@@ -34,18 +35,40 @@ func (topicRepo *topicInfraStruct) FindLastTopicID() (lastTopicID uint, err erro
 // トピック名の重複チェック
 func (topicRepo *topicInfraStruct) CheckTopicName(topicName string) (isDuplicated bool, message string, err error) {
 	topic := model.Topic{}
+	var sqlStr string
 
-	// select * from topics where is_deleted = 0 and topic_name = topicName;
-	if result := topicRepo.db.Where("is_deleted = ? AND topic_name = ?", 0, topicName).Find(&topic); result.Error != nil {
+	// スペースが含まれているかチェック
+	if strings.Contains(topicName, " ") {
+		// スペース込み && 大文字小文字区別しない
+		topicNameArray := strings.Fields(topicName)
+		var sqlSlice = make([]byte, 0)
+		sqlSlice = append(sqlSlice, "regexp '^"...)
+		for i, value := range topicNameArray {
+			if i == len(topicNameArray)-1 {
+				sqlSlice = append(sqlSlice, value...)
+			} else {
+				sqlSlice = append(sqlSlice, value...)
+				sqlSlice = append(sqlSlice, "( |　)*"...)
+			}
+		}
+		sqlSlice = append(sqlSlice, "$'"...)
+		sqlStr = string(sqlSlice)
+
+	} else {
+		// スペースなし && 大文字小文字区別しない
+		sqlStr = "collate utf8_unicode_ci like '" + topicName + "'"
+	}
+
+	if result := topicRepo.db.Raw("select * from topics where is_deleted = 0 and convert(topic_name using utf8) " + sqlStr).Scan(&topic); result.Error != nil {
 		// レコードがない場合
 		isDuplicated = false
-		message = topicName + "is not duplicated"
+		message = ""
 		return
 	}
 
 	// 重複しているレコードがあった場合
 	isDuplicated = true
-	message = topicName + " is duplicated as '" + topic.TopicName + "'"
+	message = topic.TopicName
 
 	return
 }

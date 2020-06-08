@@ -16,18 +16,24 @@ type DuplicatedTopic struct {
 }
 
 // トピック名の重複チェック
-// func CheckTopicName() echo.HandlerFunc {
-// 	return func(c echo.Context) error {
-// 		topic := model.Topic{}
-// 		c.Bind(&topic)
-//
-// 		isDuplicated, message, err := topicService.CheckTopicName(topic.TopicName)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return c.String(http.StatusOK, "isDuplicated:"+strconv.FormatBool(isDuplicated)+" message:"+message)
-// 	}
-// }
+func CheckTopicName() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		topic := model.Topic{}
+		c.Bind(&topic)
+
+		isDuplicated, message, err := topicService.CheckTopicName(topic.TopicName)
+		if err != nil {
+			return err
+		}
+
+		rd := DuplicatedTopic{
+			IsDuplicated: isDuplicated,
+			Message:      message,
+		}
+
+		return c.JSON(http.StatusOK, rd)
+	}
+}
 
 // トピックを作成
 func CreateTopic() echo.HandlerFunc {
