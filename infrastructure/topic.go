@@ -22,8 +22,8 @@ func NewTopicDB(db *gorm.DB) repository.TopicRepository {
 func (topicRepo *topicInfraStruct) FindLastTopicID() (lastTopicID uint, err error) {
 	topic := model.Topic{}
 
-	// SELECT topic_id FROM topics WHERE is_deleted = 0 ORDER BY topic_id DESC LIMIT 1;
-	if result := topicRepo.db.Select("topic_id").Where("is_deleted = ?", 0).Last(&topic); result.Error != nil {
+	// SELECT topic_id FROM topics ORDER BY topic_id DESC LIMIT 1;
+	if result := topicRepo.db.Select("topic_id").Last(&topic); result.Error != nil {
 		// レコードがない場合
 		return 0, nil
 	}
