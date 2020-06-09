@@ -76,6 +76,26 @@ func FindAllTopics() echo.HandlerFunc {
 	}
 }
 
+// トピック名を更新
+func UpdateTopicNameByTopicID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		topic := model.Topic{}
+		c.Bind(&topic)
+
+		_topicID, _ := strconv.Atoi(c.Param("topic_id"))
+
+		// intをuintに変換
+		var topicID uint = uint(_topicID)
+		if topic.TopicID != topicID {
+			return c.String(http.StatusBadRequest, "パラメータ、もしくはBodyの中身が間違っています")
+		}
+
+		updatedTopic, _ := topicService.UpdateTopicNameByTopicID(topic)
+
+		return c.JSON(http.StatusOK, updatedTopic)
+	}
+}
+
 // トピックを削除
 func DeleteTopicByTopicID() echo.HandlerFunc {
 	return func(c echo.Context) error {

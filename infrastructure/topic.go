@@ -106,6 +106,27 @@ func (topicRepo *topicInfraStruct) FindAllTopics() (topics []model.Topic, err er
 	return
 }
 
+// トピック名を更新
+func (topicRepo *topicInfraStruct) UpdateTopicNameByTopicID(topic model.Topic) (updatedTopic model.Topic, err error) {
+	// 現在の日付とデフォの削除日を取得
+	currentDate, _ := getDate()
+
+	var _updatedTopic model.Topic
+
+	// 更新
+	topicRepo.db.Model(&_updatedTopic).
+		Where("topic_id = ? AND is_deleted = ?", topic.TopicID, 0).
+		Updates(map[string]interface{}{
+			"topic_name":   topic.TopicName,
+			"updated_date": currentDate,
+		})
+
+	// 更新したトピックを取得
+	topicRepo.db.Where("topic_id = ? and is_deleted = 0 and proposed_user_id = ?", topic.TopicID, topic.ProposedUserID).Find(&updatedTopic)
+
+	return
+}
+
 // トピックを削除
 func (topicRepo *topicInfraStruct) DeleteTopicByTopicID(uintTopicID uint) (err error) {
 	deleteTopic := model.Topic{}

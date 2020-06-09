@@ -135,6 +135,9 @@ func InitRouting(e *echo.Echo) {
 	// トピックを作成
 	topicG.POST("/create", handler.CreateTopic())
 
+	// トピック名を更新
+	topicG.PUT("/:topic_id", handler.UpdateTopicNameByTopicID())
+
 	// トピックを削除
 	topicG.DELETE("/:topic_id", handler.DeleteTopicByTopicID())
 
