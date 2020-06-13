@@ -13,5 +13,6 @@ steps:
     - "AWS_S3_ACCESS_KEY_ID=${_AWS_S3_ACCESS_KEY_ID}"
     - "PROD_BUCKET_NAME=${_PROD_BUCKET_NAME}"
     - "REAL_ROOT_URL=${_REAL_ROOT_URL}"
+    - "MY_PUBLIC_IP=${_MY_PUBLIC_IP}"
 - name: "gcr.io/cloud-builders/gcloud"
   args: ["app", "deploy", '--project', 'share-it-server-prod']
