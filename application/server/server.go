@@ -100,6 +100,9 @@ func InitRouting(e *echo.Echo) {
 	// 記事を削除
 	articleG.DELETE("/:article_id", handler.DeleteArticleByArticleId())
 
+	// 記事をいいねした全ユーザ取得
+	articleG.GET("/:article_id/users", handler.FindAllLikedUsersByArticleID())
+
 	// 最後の記事IDを取得
 	articleG.GET("/lastArticleId", handler.FindLastArticleId())
 

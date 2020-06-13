@@ -29,6 +29,9 @@ type UserServiceInterface interface {
 	// ユーザを削除
 	DeleteUser(userID uint) (err error)
 
+	// 記事をいいねした全ユーザ取得
+	FindAllLikedUsersByArticleID(articleID uint) (users []model.User, err error)
+
 	// ログインチェック
 	Login(user model.User) (message string, resultUser model.User, err error)
 
