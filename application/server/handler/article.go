@@ -19,6 +19,11 @@ type ArticlesResult struct {
 	Articles     []model.Article `json:"articles"`
 }
 
+type ResponseLikedUser struct {
+	IsEmpty bool         `json:"is_empty"`
+	Users   []model.User `json:"users"`
+}
+
 // テストレスポンスを返す
 func TestResponse() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -260,6 +265,33 @@ func CreateArticle() echo.HandlerFunc {
 		updatedArticles, _ := likeService.GetLikeInfoByArtiles(loginUserID, sliceArticle)
 
 		return c.JSON(http.StatusOK, updatedArticles[0])
+	}
+}
+
+// 記事をいいねした全ユーザ取得
+func FindAllLikedUsersByArticleID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// 記事IDを取得
+		_articleID, _ := strconv.Atoi(c.Param("article_id"))
+		var articleID uint = uint(_articleID)
+
+		// 取得
+		users, _ := userService.FindAllLikedUsersByArticleID(articleID)
+		for i := 0; i < len(users); i++ {
+			// ユーザIDから署名付きURLを取得
+			users[i].IconName, _ = iconService.GetPreSignedURLByUserID(users[i].UserID)
+		}
+
+		var responseLikedUser ResponseLikedUser
+		responseLikedUser.Users = users
+
+		if len(users) == 0 {
+			responseLikedUser.IsEmpty = true
+		} else {
+			responseLikedUser.IsEmpty = false
+		}
+
+		return c.JSON(http.StatusOK, responseLikedUser)
 	}
 }
 

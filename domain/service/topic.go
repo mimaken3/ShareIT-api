@@ -23,8 +23,14 @@ type TopicServiceInterface interface {
 	// 全トピックを取得
 	FindAllTopics() (topics []model.Topic, err error)
 
+	// トピック名を更新
+	UpdateTopicNameByTopicID(topic model.Topic) (updatedTopic model.Topic, err error)
+
 	// トピックを削除
 	DeleteTopicByTopicID(uintTopicID uint) (err error)
+
+	// ユーザが作成したトピックを取得
+	FindCreatedTopicsByUserID(userID uint) (topics []model.Topic, err error)
 }
 
 // DIのための関数

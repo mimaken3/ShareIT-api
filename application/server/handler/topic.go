@@ -16,18 +16,24 @@ type DuplicatedTopic struct {
 }
 
 // トピック名の重複チェック
-// func CheckTopicName() echo.HandlerFunc {
-// 	return func(c echo.Context) error {
-// 		topic := model.Topic{}
-// 		c.Bind(&topic)
-//
-// 		isDuplicated, message, err := topicService.CheckTopicName(topic.TopicName)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return c.String(http.StatusOK, "isDuplicated:"+strconv.FormatBool(isDuplicated)+" message:"+message)
-// 	}
-// }
+func CheckTopicName() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		topic := model.Topic{}
+		c.Bind(&topic)
+
+		isDuplicated, message, err := topicService.CheckTopicName(topic.TopicName)
+		if err != nil {
+			return err
+		}
+
+		rd := DuplicatedTopic{
+			IsDuplicated: isDuplicated,
+			Message:      message,
+		}
+
+		return c.JSON(http.StatusOK, rd)
+	}
+}
 
 // トピックを作成
 func CreateTopic() echo.HandlerFunc {
@@ -67,6 +73,26 @@ func FindAllTopics() echo.HandlerFunc {
 		}
 
 		return c.JSON(http.StatusOK, topics)
+	}
+}
+
+// トピック名を更新
+func UpdateTopicNameByTopicID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		topic := model.Topic{}
+		c.Bind(&topic)
+
+		_topicID, _ := strconv.Atoi(c.Param("topic_id"))
+
+		// intをuintに変換
+		var topicID uint = uint(_topicID)
+		if topic.TopicID != topicID {
+			return c.String(http.StatusBadRequest, "パラメータ、もしくはBodyの中身が間違っています")
+		}
+
+		updatedTopic, _ := topicService.UpdateTopicNameByTopicID(topic)
+
+		return c.JSON(http.StatusOK, updatedTopic)
 	}
 }
 

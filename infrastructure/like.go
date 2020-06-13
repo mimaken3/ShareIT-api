@@ -52,9 +52,10 @@ func (likeRepo *likeInfraStruct) GetLastLikeID() (lastLikeID uint, err error) {
 }
 
 // いいねを追加
-func (likeRepo *likeInfraStruct) AddLike(userID uint, articleID uint, lastLikeID uint) (err error) {
+func (likeRepo *likeInfraStruct) AddLike(userID uint, articleID uint, lastLikeID uint) (likeID uint, err error) {
 	var like model.Like
-	like.LikeID = lastLikeID + 1
+	likeID = lastLikeID + 1
+	like.LikeID = likeID
 	like.UserID = userID
 	like.ArticleID = articleID
 
@@ -64,10 +65,10 @@ func (likeRepo *likeInfraStruct) AddLike(userID uint, articleID uint, lastLikeID
 }
 
 // いいねを外す
-func (likeRepo *likeInfraStruct) DeleteLike(userID uint, articleID uint) (err error) {
+func (likeRepo *likeInfraStruct) DeleteLike(userID uint, articleID uint) (likeID uint, err error) {
 	like := model.Like{}
 	likeRepo.db.Where("user_id = ? AND article_id = ?", userID, articleID).Delete(&like)
-	return
+	return 0, err
 }
 
 // 記事のいいねを削除

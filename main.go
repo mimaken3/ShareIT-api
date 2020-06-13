@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/gorilla/sessions"
@@ -18,7 +19,22 @@ func main() {
 	e := echo.New()
 
 	// CORS
-	e.Use(middleware.CORS())
+	if appengine.IsAppEngine() {
+		// GAE
+		realRootURL := os.Getenv("REAL_ROOT_URL")
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: []string{realRootURL, "http://shareit.fun", "https://shareit.fun"},
+			AllowHeaders: []string{"*"},
+			AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPost, http.MethodDelete},
+		}))
+	} else {
+		// Local
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: []string{"http://localhost:8088"},
+			AllowHeaders: []string{"*"},
+			AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPost, http.MethodDelete},
+		}))
+	}
 
 	// 認証チェック
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(os.Getenv("SECRET_KEY")))))
@@ -27,7 +43,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8081"
 		e.Logger.Printf("Defaulting to port %s", port)
 	}
 

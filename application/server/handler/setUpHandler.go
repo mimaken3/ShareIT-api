@@ -14,6 +14,7 @@ var profileService service.ProfileServiceInterface
 var iconService service.IconServiceInterface
 var likeService service.LikeServiceInterface
 var commentService service.CommentServiceInterface
+var notificationService service.NotificationServiceInterface
 
 func DI() {
 	// ユーザ
@@ -55,4 +56,8 @@ func DI() {
 	// コメント
 	commentRepo := infrastructure.NewCommentDB(infrastructure.DB)
 	commentService = service.NewCommentService(commentRepo)
+
+	// 通知
+	notificationRepo := infrastructure.NewNotificationDB(infrastructure.DB)
+	notificationService = service.NewNotificationService(notificationRepo)
 }

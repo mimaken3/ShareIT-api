@@ -125,8 +125,8 @@ func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment
 	// 更新するフィールドを設定
 	updateContent := updateComment.Content
 
-	var _updatedComment model.Comment
 	// 更新
+	var _updatedComment model.Comment
 	commentRepo.db.Model(&_updatedComment).
 		Where("comment_id = ?", commentID).
 		Updates(map[string]interface{}{
@@ -134,6 +134,7 @@ func (commentRepo *commentInfraStruct) UpdateComment(updateComment model.Comment
 			"updated_date": currentDate,
 		})
 
+		// 更新したコメントを取得
 	result := commentRepo.db.Raw(`
 SELECT 
 	c.comment_id, 

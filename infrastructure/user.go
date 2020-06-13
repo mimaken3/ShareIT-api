@@ -169,6 +169,51 @@ func (userRepo *userInfraStruct) DeleteUser(userID uint) (err error) {
 	return nil
 }
 
+// 記事をいいねした全ユーザ取得
+func (userRepo *userInfraStruct) FindAllLikedUsersByArticleID(articleID uint) (users []model.User, err error) {
+	rows, err := userRepo.db.Raw(`
+select 
+  u.user_id, 
+  u.user_name 
+from 
+  (
+    select 
+      * 
+    from 
+      users 
+    where 
+      is_deleted = 0
+  ) as u 
+  inner join (
+    select 
+      * 
+    from 
+      likes 
+    where 
+      article_id = ? 
+  ) as l on u.user_id = l.user_id 
+order by 
+  like_id desc
+;
+	`, articleID).Rows()
+
+	defer rows.Close()
+	for rows.Next() {
+		user := model.User{}
+		err = userRepo.db.ScanRows(rows, &user)
+		if err == nil {
+			users = append(users, user)
+		}
+	}
+
+	// レコードがない場合
+	// if len(users) == 0 {
+	// 	return nil, errors.New("record not found")
+	// }
+
+	return
+}
+
 // ログイン
 func (userRepo *userInfraStruct) Login(user model.User) (message string, resultUser model.User, err error) {
 	result := userRepo.db.Raw(`

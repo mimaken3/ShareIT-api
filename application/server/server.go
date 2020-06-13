@@ -61,8 +61,21 @@ func InitRouting(e *echo.Echo) {
 	// 特定のユーザのいいねした記事を取得(ページング)
 	userG.GET("/:user_id/like/articles", handler.FindAllLikedArticlesByUserID())
 
+	// ユーザが作成したトピックを取得
+	userG.GET("/:user_id/topics", handler.FindCreatedTopicsByUserID())
+
 	// 記事を投稿
 	userG.POST("/:user_id/createArticle", handler.CreateArticle())
+
+	// ==========
+	// || 通知 ||
+	// ==========
+
+	// ユーザの通知一覧を取得
+	userG.GET("/:user_id/notifications", handler.FindAllNotificationsByUserID())
+
+	// 通知の未読を既読に
+	userG.PUT("/:user_id/notifications", handler.ReadNotificationByNotificationID())
 
 	// ==========
 	// || 記事 ||
@@ -86,6 +99,9 @@ func InitRouting(e *echo.Echo) {
 
 	// 記事を削除
 	articleG.DELETE("/:article_id", handler.DeleteArticleByArticleId())
+
+	// 記事をいいねした全ユーザ取得
+	articleG.GET("/:article_id/users", handler.FindAllLikedUsersByArticleID())
 
 	// 最後の記事IDを取得
 	articleG.GET("/lastArticleId", handler.FindLastArticleId())
@@ -116,9 +132,14 @@ func InitRouting(e *echo.Echo) {
 	// || トピック||
 	// =============
 	topicG := apiG.Group("/topics")
+	// トピック名の重複チェック
+	topicG.POST("/check", handler.CheckTopicName())
 
 	// トピックを作成
 	topicG.POST("/create", handler.CreateTopic())
+
+	// トピック名を更新
+	topicG.PUT("/:topic_id", handler.UpdateTopicNameByTopicID())
 
 	// トピックを削除
 	topicG.DELETE("/:topic_id", handler.DeleteTopicByTopicID())

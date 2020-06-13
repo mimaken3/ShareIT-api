@@ -26,13 +26,24 @@ func ToggleLikeByArticle() echo.HandlerFunc {
 			return c.String(http.StatusBadRequest, "URL、もしくはBodyの中身が違います")
 		}
 
-		// ページング番号を取得
 		isLiked, _ := strconv.ParseBool(c.QueryParam("is_liked"))
 
-		// いいねをトグルした後の記事を取得
-		_ = likeService.ToggleLikeByArticle(userID, articleID, isLiked)
+		// いいねしたらいいねID,いいねを外したら0が返る
+		likeID, err := likeService.ToggleLikeByArticle(userID, articleID, isLiked)
 
+		if isLiked {
+			// いいねした場合、通知を作成(1はいいねのタイプID)
+			_, _ = notificationService.CreateNotification(userID, 1, likeID, articleID)
+		} else {
+			// いいねを外しても通知は削除しない
+		}
+
+		// いいねをトグルした後の記事を取得
 		article, err := articleService.FindArticleByArticleId(userID, articleID)
+
+		// ユーザIDから署名付きURLを取得
+		article.IconName, err = iconService.GetPreSignedURLByUserID(article.CreatedUserID)
+
 		if err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
