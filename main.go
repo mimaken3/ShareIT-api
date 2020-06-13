@@ -22,9 +22,8 @@ func main() {
 	if appengine.IsAppEngine() {
 		// GAE
 		realRootURL := os.Getenv("REAL_ROOT_URL")
-		myPublicIP := os.Getenv("MY_PUBLIC_IP")
 		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins: []string{realRootURL, myPublicIP, "http://shareit.fun", "https://shareit.fun"},
+			AllowOrigins: []string{realRootURL, "http://shareit.fun", "https://shareit.fun"},
 			AllowHeaders: []string{"*"},
 			AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPost, http.MethodDelete},
 		}))
