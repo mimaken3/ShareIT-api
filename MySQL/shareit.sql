@@ -33,7 +33,7 @@ DROP TABLE IF EXISTS articles;
 CREATE table articles(
   article_id INT UNSIGNED NOT NULL PRIMARY KEY,
   created_user_id INT unsigned NOT NULL,
-  icon_name VARCHAR(500) NOT NULL,
+  icon_name VARCHAR(500),
   article_title VARCHAR(255) character set utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   article_content VARCHAR(9999) character set utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   created_date DATETIME NOT NULL,
@@ -89,7 +89,7 @@ DROP TABLE IF EXISTS likes;
 CREATE TABLE likes(
   like_id INT UNSIGNED NOT NULL PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL,
-  article_id INT UNSIGNED NOT NULL
+  article_id INT UNSIGNED NOT NULL,
   notification_id INT UNSIGNED,
 );
 
